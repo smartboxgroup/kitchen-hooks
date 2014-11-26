@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+#
+
+require 'optparse'
+
+options = { :config_file => "/etc/kitchen_hooks/config.json" }
+OptionParser.new do |opts|
+  opts.banner = "Usage: kitchen_hooks [options]"
+  opts.on("-c", "--config CONFIG", "Configuration json file") do |path|
+    options[:config_file] = path
+  end
+end.parse!
+
+puts options
+
+require 'kitchen_hooks'
+KitchenHooks::App.run(options[:config_file])
