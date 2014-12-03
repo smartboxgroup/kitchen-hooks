@@ -1,16 +1,25 @@
+# -*- encoding: utf-8 -*-
+$:.push File.expand_path(File.join('..', 'lib'), __FILE__)
+require 'kitchen_hooks'
+
 Gem::Specification.new do |s|
   s.name        = 'kitchen_hooks'
-  s.version     = '0.1.0'
-  s.licenses    = [ ]
-  s.summary     = "Uploads chef cookbooks to chef server"
-  s.description = "Uploads chef cookbooks to chef server. Responds to posts from gitlab webooks."
-  s.authors     = ["Kelly Wong"]
-  s.email       = 'netops@bluejeans.com'
-  s.files       = Dir['lib/**/*.rb'] + Dir['bin/*']
-  s.homepage    = 'http://git.bluejeansnet.com/kelly/kitchen-hooks'
-  s.executables = ['kitchen_hooks']
-  s.default_executable = 'kitchen_hooks'
+  s.version     = KitchenHooks::VERSION
+  s.platform    = Gem::Platform::RUBY
+  s.author      = KitchenHooks::AUTHOR
+  s.email       = KitchenHooks::EMAIL
+  s.summary     = KitchenHooks::SUMMARY
+  s.description = KitchenHooks::SUMMARY + '.'
+  s.homepage    = KitchenHooks::HOMEPAGE
+  s.license     = KitchenHooks::LICENSE
+
+  s.add_runtime_dependency 'thor', '~> 0'
   s.add_runtime_dependency 'sinatra', '~> 1.4'
   s.add_runtime_dependency 'mail', '~> 2.6'
   s.add_runtime_dependency 'git', '~> 1.2'
+
+  s.files         = `git ls-files`.split("\n")
+  s.test_files    = `git ls-files -- test/*`.split("\n")
+  s.executables   = `git ls-files -- bin/*`.split("\n").map { |f| File::basename(f) }
+  s.require_paths = %w[ lib ]
 end

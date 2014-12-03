@@ -1,3 +1,3 @@
-
-require 'kitchen_hooks/application/app'
-require 'kitchen_hooks/application/kitchen_hooks_app'
+require_relative 'kitchen_hooks/app'
+require_relative 'kitchen_hooks/main'
+require_relative 'kitchen_hooks/metadata'
