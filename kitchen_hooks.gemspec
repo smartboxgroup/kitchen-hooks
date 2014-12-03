@@ -13,10 +13,14 @@ Gem::Specification.new do |s|
   s.homepage    = KitchenHooks::HOMEPAGE
   s.license     = KitchenHooks::LICENSE
 
+  s.add_runtime_dependency 'retryable', '~> 1'
+  s.add_runtime_dependency 'berkshelf', '~> 3'
+  s.add_runtime_dependency 'mime-types', '~> 1'
+  s.add_runtime_dependency 'chef', '~> 11.16.4'
   s.add_runtime_dependency 'thor', '~> 0'
-  s.add_runtime_dependency 'sinatra', '~> 1.4'
-  s.add_runtime_dependency 'mail', '~> 2.6'
   s.add_runtime_dependency 'git', '~> 1.2'
+  s.add_runtime_dependency 'sinatra', '~> 1.4'
+  s.add_runtime_dependency 'ridley', '~> 4.1'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- test/*`.split("\n")
