@@ -1,3 +1,15 @@
-*.swp
-*.gem
+*~
 *.deb
+*.gem
+*.log
+*.out
+*.pid
+*.swp
+*.pem
+*.pub
+*.priv
+.DS_Store
+.yardoc
+doc
+pkg
+tmp

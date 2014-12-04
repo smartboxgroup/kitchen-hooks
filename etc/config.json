@@ -3,12 +3,12 @@
     "user": "chef-upload@bluejeansnet.com",
     "port": 25,
     "server": "10.4.5.7",
-    "recipient": "kelly@bluejeans.com"
+    "recipient": "sclemmer@bluejeans.com"
   },
   "servers": [
     {
       "name": "Prod",
-      "knife": "~/.chef/prod_knife.rb"
+      "knife": "~/.chef/knife.rb"
     }
   ]
 }

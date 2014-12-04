@@ -1,5 +1,17 @@
 source 'https://rubygems.org'
 
-gem 'git'
-gem 'sinatra'
-gem 'mail'
+gemspec
+
+group :development do
+  gem 'fpm'
+  gem 'pry'
+  gem 'rake'
+  gem 'yard'
+  gem 'thin'
+  gem 'version'
+  gem 'rubygems-tasks'
+end
+
+group :test do
+  gem 'minitest'
+end
