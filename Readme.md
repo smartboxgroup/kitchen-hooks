@@ -1,6 +1,7 @@
-# Kitchen Hooks
+# Hooks
 
-GitLab WebHoook for automated Chef Server uploads following Kitchen standards.
+[Kitchen Hooks](http://git.bluejeansnet.com/kitchen-hooks) provide a GitLab
+WebHoook for automated Chef Server uploads following Kitchen standards.
 
 
 ## Installation
@@ -31,11 +32,14 @@ Use the `server` command to start the WebHook receiver:
 
 ## TODO
 
-* Need `berks upload` or equivalent functionality when tagging realm releases
 * Use Ridley for data bag, role, and environment uploads to remove Chef dependency
 
 
 ## Changelog
+
+### 1.2
+
+* Added `berks upload` functionality when tagging realm releases
 
 ### 1.1
 

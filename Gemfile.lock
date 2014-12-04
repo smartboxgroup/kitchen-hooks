@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kitchen_hooks (1.0.1)
+    kitchen_hooks (1.1.0)
       berkshelf (~> 3)
       chef (~> 11.16.4)
       git (~> 1.2)

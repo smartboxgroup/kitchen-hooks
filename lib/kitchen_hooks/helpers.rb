@@ -44,7 +44,26 @@ module KitchenHooks
         raise unless tagged_version == cookbook_version
         puts 'Uploading cookbook'
         with_each_knife "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+
+        if File::exist?('Berksfile.lock')
+          puts 'Uploading dependencies'
+          knives.each do |knife|
+            berks_upload knife
+          end
+        end
       end
+    end
+
+    def berks_upload knife, options={}
+      ridley = Ridley::from_chef_config knife
+      options = {
+        berksfile: 'Berksfile', freeze: true, validate: true
+      }.merge(options).merge \
+        server_url: ridley.server_url,
+        client_name: ridley.client_name,
+        client_key: ridley.client_key
+      berksfile = Berkshelf::Berksfile.from_options(options)
+      berksfile.upload([], options.symbolize_keys)
     end
 
     def tmp_clone event, commit_method, &block
