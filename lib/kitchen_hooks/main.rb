@@ -48,7 +48,13 @@ module KitchenHooks
       aliases: %w[ -c ],
       desc: 'Configuration file to use',
       default: '/etc/kitchen_hooks/config.json'
+    option :database, \
+      type: :string,
+      aliases: %w[ -d ],
+      desc: 'Location of application database',
+      default: '/etc/kitchen_hooks/app.db'
     def server
+      App.db! options.database
       App.config! JSON::parse(File.read(options.config))
       App.set :environment, options.environment
       App.set :port, options.port

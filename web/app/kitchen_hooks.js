@@ -1,4 +1,6 @@
 ;(function(){
+  // Add relative timestamps
+  jQuery('.time-ago').timeago();
 
   // Ripped from http://codyhouse.co/gem/vertical-timeline
   jQuery(document).ready(function($){

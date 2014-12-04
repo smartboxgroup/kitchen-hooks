@@ -1,23 +1,22 @@
 <section id="cd-timeline" class="cd-container">
-  <div class="cd-timeline-block">
-    <div class="cd-timeline-img">
-      <img src="/vendor/img/cd-icon.svg" alt="Picture">
+  <% database.reverse.each do |entry| %>
+    <% timestamp, data = entry %>
+    <% timestamp = timestamp.to_f %>
+    <% datetime = Time.at(timestamp).iso8601 %>
+    <div class="cd-timeline-block">
+      <div class="cd-timeline-img">
+        <img src="/vendor/img/cd-icon.svg" alt="Picture">
+      </div>
+      <div class="cd-timeline-content">
+        <% if data[:type] == 'kitchen upload' %>
+          <h2><%= data[:type] %></h2>
+          <p><%= data[:author] %> modified <a href="<%= gitlab_url(data[:raw], :latest_commit) %>"><%= data[:repo] %></a></p>
+        <% else %>
+          <h2><%= data[:type] %></h2>
+          <p><%= data[:author] %> modified <a href="<%= gitlab_url(data[:raw], :tagged_commit) %>"><%= data[:repo] %></a></p>
+        <% end %>
+        <span class="cd-date">Triggered <time datetime="<%= datetime %>" pubdate="pubdate" class="time-ago" title="<%= datetime %>"><%= datetime %></time></span>
+      </div>
     </div>
-    <div class="cd-timeline-content">
-      <h2>Title of section 1</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Iusto, optio, dolorum provident rerum aut hic quasi placeat iure tempora laudantium ipsa ad debitis unde? Iste voluptatibus minus veritatis qui ut.</p>
-      <span class="cd-date">Jan 14</span>
-    </div>
-  </div>
-
-  <div class="cd-timeline-block">
-    <div class="cd-timeline-img">
-      <img src="/vendor/img/cd-icon.svg" alt="Picture">
-    </div>
-    <div class="cd-timeline-content">
-      <h2>Title of section 2</h2>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Iusto, optio, dolorum provident rerum aut hic quasi placeat iure tempora laudantium ipsa ad debitis unde? Iste voluptatibus minus veritatis qui ut.</p>
-      <span class="cd-date">Jan 13</span>
-    </div>
-  </div>
+  <% end %>
 </section>

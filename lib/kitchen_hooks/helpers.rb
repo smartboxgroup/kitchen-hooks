@@ -132,6 +132,10 @@ module KitchenHooks
       chef_environment.save
     end
 
+    def author event
+      event['user_name']
+    end
+
     def repo_name event
       File::basename event['repository']['url'], '.git'
     end
@@ -140,8 +144,17 @@ module KitchenHooks
       repo_name(event).sub /^(app|base|realm|fork)_/, 'bjn_'
     end
 
+    def cookbook_repo? event
+      repo_name(event) =~ /^(app|base|realm|fork)_/
+    end
+
     def git_daemon_style_url event
       event['repository']['url'].sub(':', '/').sub('@', '://')
+    end
+
+    def gitlab_url event, commit_method
+      url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
+      "#{url}/commit/#{self.send(commit_method, event)}"
     end
 
     def latest_commit event
@@ -164,7 +177,7 @@ module KitchenHooks
     end
 
     def tagged_commit_to_cookbook? event
-      repo_name(event) =~ /^(app|base|realm|fork)_/ &&
+      cookbook_repo?(event) &&
       event['ref'] =~ %r{/tags/} &&
       not_deleted?(event)
     end
