@@ -3,6 +3,7 @@ require 'json'
 
 require 'git'
 require 'ridley'
+require 'berkshelf'
 
 
 module KitchenHooks
@@ -10,6 +11,7 @@ module KitchenHooks
     def perform_constraint_application event, knives
       tag = tag_name event
       tmp_clone event, :tagged_commit do
+        puts 'Applying constraints'
         constraints = lockfile_constraints 'Berksfile.lock'
         environment = tag_name event
         knives.each do |k|
@@ -21,10 +23,10 @@ module KitchenHooks
     def perform_kitchen_upload event, knives
       tmp_clone event, :latest_commit do
         puts 'Uploading data_bags'
-        with_each_knife 'upload data_bags', knives
+        with_each_knife 'upload data_bags --chef-repo-path .', knives
 
         puts 'Uploading roles'
-        with_each_knife 'upload roles', knives
+        with_each_knife 'upload roles --chef-repo-path .', knives
 
         puts 'Uploading environments'
         Dir['environments/*'].each do |e|
@@ -41,12 +43,13 @@ module KitchenHooks
         cookbook_version = File.read('VERSION').strip
         raise unless tagged_version == cookbook_version
         puts 'Uploading cookbook'
-        with_each_knife "cookbook upload #{repo_name event} -o .. --freeze", knives
+        with_each_knife "cookbook upload #{cookbook_name event} -o .. --freeze", knives
       end
     end
 
     def tmp_clone event, commit_method, &block
-      Dir.mktmpdir do |dir|
+      Dir.mktmpdir do |tmp|
+        dir = File::join tmp, cookbook_name(event)
         repo = Git.clone git_daemon_style_url(event), dir, log: $stdout
         repo.checkout self.send(commit_method, event)
         Dir.chdir dir do
@@ -57,7 +60,7 @@ module KitchenHooks
 
     def with_each_knife command, knives
       knives.map do |k|
-        `knife #{command} --chef-repo-path . --config #{Shellwords::escape k} 2>&1`
+        `knife #{command} --config #{Shellwords::escape k}`
       end
     end
 
@@ -114,6 +117,10 @@ module KitchenHooks
       File::basename event['repository']['url'], '.git'
     end
 
+    def cookbook_name event
+      repo_name(event).sub /^(app|base|realm|fork)_/, 'bjn_'
+    end
+
     def git_daemon_style_url event
       event['repository']['url'].sub(':', '/').sub('@', '://')
     end
@@ -127,6 +134,8 @@ module KitchenHooks
       return $1 # First regex capture
     end
 
+    alias_method :tag_name, :tagged_commit
+
     def not_deleted? event
       event['after'] != '0000000000000000000000000000000000000000'
     end
@@ -136,13 +145,13 @@ module KitchenHooks
     end
 
     def tagged_commit_to_cookbook? event
-      repo_name(event) =~ /^(app|base|realm|fork)_/ && \
-      event['ref'] =~ %r{/tags/} && \
+      repo_name(event) =~ /^(app|base|realm|fork)_/ &&
+      event['ref'] =~ %r{/tags/} &&
       not_deleted?(event)
     end
 
     def tagged_commit_to_realm? event
-      tagged_commit_to_cookbook?(event) && \
+      tagged_commit_to_cookbook?(event) &&
       repo_name(event) =~ /^realm_/
     end
   end

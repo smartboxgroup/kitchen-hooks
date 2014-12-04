@@ -1,3 +1,4 @@
+require 'pathname'
 require 'json'
 
 require 'sinatra/base'
@@ -11,7 +12,9 @@ module KitchenHooks
     include KitchenHooks::Helpers
 
     def self.config! config
-      @@knives = config['servers'].map { |s| s['knife'] }
+      @@knives = config['servers'].map do |s|
+        Pathname.new(s['knife']).expand_path.realpath.to_s
+      end
     end
 
     def knives ; @@knives ||= [] end
@@ -27,16 +30,16 @@ module KitchenHooks
       request.body.rewind
       event = JSON::parse request.body.read
 
-      if commit_to_kitchen? event
+      if commit_to_kitchen?(event)
         perform_kitchen_upload event, knives
       end
 
-      if tagged_commit_to_cookbook? event && \
+      if tagged_commit_to_cookbook?(event) &&
          tag_name(event) =~ /^v\d+/ # Tagged with version we're releasing
         perform_cookbook_upload event, knives
       end
 
-      if tagged_commit_to_realm? event && \
+      if tagged_commit_to_realm?(event) &&
          tag_name(event) =~ /^bjn_/ # Tagged with environment we're pinning
         perform_constraint_application event, knives
       end

@@ -5,7 +5,7 @@ GitLab WebHoook for automated Chef Server uploads following Kitchen standards.
 
 ## Installation
 
-Clone this repo and `rake build`.
+Clone the repo and `rake build`.
 
 
 ## Usage
@@ -32,6 +32,7 @@ Use the `server` command to start the WebHook receiver:
 ## TODO
 
 * Need `berks upload` or equivalent functionality when tagging realm releases
+* Use Ridley for data bag, role, and environment uploads to remove Chef dependency
 
 
 ## Changelog
