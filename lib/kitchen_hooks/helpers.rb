@@ -36,8 +36,10 @@ module KitchenHooks
     end
 
     def perform_cookbook_upload event, knives
-      # TODO: Ensure local cookbook version is what's tagged
       tmp_clone event, :tagged_commit do
+        tagged_version = tag_name(event).delete('v')
+        cookbook_version = File.read('VERSION').strip
+        raise unless tagged_version == cookbook_version
         puts 'Uploading cookbook'
         with_each_knife "cookbook upload #{repo_name event} -o .. --freeze", knives
       end
