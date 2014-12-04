@@ -1,3 +1,4 @@
+require 'shellwords'
 require 'rubygems'
 require 'bundler'
 require 'rake'
@@ -38,7 +39,9 @@ Rake::VersionTask.new
 
 
 # "rake fpm"
-desc 'Convert all .GEMs to .DEBs with FPM'
+desc 'Convert latest .gem to .deb with FPM'
 task fpm: :build do
-  system '[ -d pkg ] && fpm -s gem -t deb pkg/*.gem'
+  latest_gem = Dir['pkg/*.gem'].pop
+  system "fpm -s gem -t deb #{Shellwords::escape latest_gem}"
+  system 'mv *.deb pkg'
 end

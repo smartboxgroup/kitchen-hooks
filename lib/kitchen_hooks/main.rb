@@ -1,11 +1,17 @@
 require 'thor'
-require 'sinatra/base'
 
 require_relative 'app'
 require_relative 'metadata'
 
+
 module KitchenHooks
   class Main < Thor
+    desc 'version', 'Show application version'
+    def version
+      puts VERSION
+    end
+
+
     desc 'art', 'Show application art'
     def art
       w = ART.lines.map(&:length).sort.last
@@ -20,12 +26,18 @@ module KitchenHooks
       puts "\n\n\n"
     end
 
-    desc 'version', 'Show application version'
-    def version
-      puts VERSION
-    end
 
     desc 'server', 'Start application web server'
+    option :port, \
+      type: :numeric,
+      aliases: %w[ -p ],
+      desc: 'Set Sinatra port',
+      default: 4567
+    option :environment, \
+      type: :string,
+      aliases: %w[ -e ],
+      desc: 'Set Sinatra environment',
+      default: 'development'
     option :config, \
       type: :string,
       aliases: %w[ -c ],
@@ -33,7 +45,8 @@ module KitchenHooks
       default: '/etc/kitchen_hooks/config.json'
     def server
       App.config! JSON::parse(File.read(options.config))
-      App.set :environment, :production
+      App.set :environment, options.environment
+      App.set :port, options.port
       App.run!
     end
   end
