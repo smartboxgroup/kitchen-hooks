@@ -32,11 +32,14 @@ Use the `server` command to start the WebHook receiver:
 
 ## TODO
 
-* Add local database to store history (Daybreak), visualize on homepage
 * Use Ridley for data bag, role, and environment uploads to remove Chef dependency
 
 
 ## Changelog
+
+### 1.3
+
+* Added local database to store history (Daybreak), visualized on homepage
 
 ### 1.2
 
