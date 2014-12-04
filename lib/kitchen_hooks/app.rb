@@ -9,6 +9,10 @@ require_relative 'metadata'
 
 module KitchenHooks
   class App < Sinatra::Application
+    set :root, File.join(KitchenHooks::ROOT, 'web')
+
+    enable :sessions
+
     include KitchenHooks::Helpers
 
     def self.config! config
@@ -20,9 +24,16 @@ module KitchenHooks
     def knives ; @@knives ||= [] end
 
 
-    get '/' do
-      content_type :text
-      KitchenHooks::VERSION
+    get '/' do ; erb :app end
+
+    get '/favicon.ico' do
+      send_file File.join(settings.root, 'favicon.ico'), \
+        :disposition => 'inline'
+    end
+
+    get %r|/app/(.*)| do |fn|
+      send_file File.join(settings.root, 'app', fn), \
+        :disposition => 'inline'
     end
 
 

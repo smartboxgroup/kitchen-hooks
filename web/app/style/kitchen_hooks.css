@@ -1,0 +1,21 @@
+body {
+  margin: 2em;
+}
+
+.cd-timeline-img {
+  background: #75ce66;
+}
+
+.cd-timeline-content {
+  color: #4e5d6c;
+}
+
+.cd-timeline-content h2 {
+  font-weight: bold;
+}
+
+@media only screen and (min-width: 1170px) {
+  .cd-date {
+    color: white;
+  }
+}
