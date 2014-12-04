@@ -12,10 +12,22 @@ body {
 
 .cd-timeline-content h2 {
   font-weight: bold;
+  margin-top: 0;
+}
+
+.cd-timeline-content p:last-of-type {
+  margin-bottom: 0;
+}
+
+.cd-timeline-content .cd-date {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  float: right;
 }
 
 @media only screen and (min-width: 1170px) {
-  .cd-date {
+  .cd-timeline-content .cd-date {
     color: white;
+    float: left;
   }
 }
