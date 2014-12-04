@@ -45,11 +45,3 @@ task fpm: :build do
   system "fpm -s gem -t deb #{Shellwords::escape latest_gem}"
   system 'mv *.deb pkg'
 end
-
-
-# "rake install"
-desc 'Install the latest .gem'
-task install: :build do
-  latest_gem = Dir['pkg/*.gem'].pop
-  system "gem install #{Shellwords::escape latest_gem}"
-end

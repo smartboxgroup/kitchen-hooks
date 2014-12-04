@@ -5,7 +5,7 @@ GitLab WebHoook for automated Chef Server uploads following Kitchen standards.
 
 ## Installation
 
-Clone this repo and `rake install`.
+Clone this repo and `rake build`.
 
 
 ## Usage
