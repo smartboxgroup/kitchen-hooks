@@ -38,6 +38,11 @@ module KitchenHooks
       aliases: %w[ -e ],
       desc: 'Set Sinatra environment',
       default: 'development'
+    option :bind, \
+      type: :string,
+      aliases: %w[ -b ],
+      desc: 'Set Sinatra interface',
+      default: '0.0.0.0'
     option :config, \
       type: :string,
       aliases: %w[ -c ],
@@ -47,6 +52,7 @@ module KitchenHooks
       App.config! JSON::parse(File.read(options.config))
       App.set :environment, options.environment
       App.set :port, options.port
+      App.set :bind, options.bind
       App.run!
     end
   end

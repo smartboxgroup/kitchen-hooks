@@ -39,6 +39,7 @@ Use the `server` command to start the WebHook receiver:
 
 ### 1.2
 
+* Added `bind` option to `server` command
 * Added `berks upload` functionality when tagging realm releases
 
 ### 1.1
