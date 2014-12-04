@@ -32,6 +32,7 @@ Use the `server` command to start the WebHook receiver:
 
 ## TODO
 
+* Add local database to store history (Daybreak), visualize on homepage
 * Use Ridley for data bag, role, and environment uploads to remove Chef dependency
 
 
@@ -40,7 +41,7 @@ Use the `server` command to start the WebHook receiver:
 ### 1.2
 
 * Added `bind` option to `server` command
-* Added `berks upload` functionality when tagging realm releases
+* Added `berks upload` functionality when tagging realm versions
 
 ### 1.1
 
