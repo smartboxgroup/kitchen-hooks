@@ -6,12 +6,14 @@ require 'ridley'
 require 'berkshelf'
 
 
+Berkshelf.logger = Logger.new $stdout
+
 module KitchenHooks
   module Helpers
     def perform_constraint_application event, knives
       tag = tag_name event
       tmp_clone event, :tagged_commit do
-        puts 'Applying constraints'
+        logger.info 'Applying constraints'
         constraints = lockfile_constraints 'Berksfile.lock'
         environment = tag_name event
         knives.each do |k|
@@ -22,13 +24,13 @@ module KitchenHooks
 
     def perform_kitchen_upload event, knives
       tmp_clone event, :latest_commit do
-        puts 'Uploading data_bags'
+        logger.info 'Uploading data_bags'
         with_each_knife 'upload data_bags --chef-repo-path .', knives
 
-        puts 'Uploading roles'
+        logger.info 'Uploading roles'
         with_each_knife 'upload roles --chef-repo-path .', knives
 
-        puts 'Uploading environments'
+        logger.info 'Uploading environments'
         Dir['environments/*'].each do |e|
           knives.each do |k|
             upload_environment e, k
@@ -42,11 +44,11 @@ module KitchenHooks
         tagged_version = tag_name(event).delete('v')
         cookbook_version = File.read('VERSION').strip
         raise unless tagged_version == cookbook_version
-        puts 'Uploading cookbook'
+        logger.info 'Uploading cookbook'
         with_each_knife "cookbook upload #{cookbook_name event} -o .. --freeze", knives
 
         if File::exist?('Berksfile.lock')
-          puts 'Uploading dependencies'
+          logger.info 'Uploading dependencies'
           knives.each do |knife|
             berks_upload knife
           end
