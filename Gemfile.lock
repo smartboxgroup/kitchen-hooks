@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    kitchen_hooks (1.2.0)
+    kitchen_hooks (1.3.0)
       berkshelf (~> 3)
       chef (~> 11.16.4)
       daybreak (~> 0.3)
