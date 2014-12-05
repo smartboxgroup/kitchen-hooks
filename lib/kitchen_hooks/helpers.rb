@@ -63,7 +63,9 @@ module KitchenHooks
         client_name: ridley.client_name,
         client_key: ridley.client_key
       berksfile = Berkshelf::Berksfile.from_options(options)
-      berksfile.upload([], options.symbolize_keys)
+
+      # # TODO: Figure out why "berks upload" takes so damn long
+      # berksfile.upload([], options.symbolize_keys)
     end
 
     def tmp_clone event, commit_method, &block
