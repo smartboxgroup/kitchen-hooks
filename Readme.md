@@ -32,6 +32,10 @@ Use the `server` command to start the WebHook receiver:
 
 ## TODO
 
+* Add indication of success or failure
+* Add custom timeline icons to distinguish event types
+* Link to version with `.../commits/vX.Y.Z` where appropriate
+* Replace "modified" with more appropriate verb where appropriate
 * Use Ridley for data bag, role, and environment uploads to remove Chef dependency
 
 
