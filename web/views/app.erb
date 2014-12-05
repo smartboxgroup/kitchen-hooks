@@ -9,13 +9,8 @@
         <img src="/vendor/img/cd-icon.svg" alt="Picture">
       </div>
       <div class="cd-timeline-content">
-        <% if type == 'kitchen upload' %>
-          <h2><%= type %></h2>
-          <p><%= author(event) %> modified <a href="<%= gitlab_url(event) %>">the Kitchen</a></p>
-        <% else %>
-          <h2><%= type %></h2>
-          <p><%= author(event) %> modified <a href="<%= gitlab_url(event) %>"><%= repo_name(event) %></a></p>
-        <% end %>
+        <h2><%= type %></h2>
+        <p><%= notification(event, type) %></p>
         <span class="cd-date"><time datetime="<%= datetime %>" pubdate="pubdate" class="time-ago" title="<%= datetime %>"><%= datetime %></time></span>
       </div>
     </div>

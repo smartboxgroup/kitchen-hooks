@@ -132,6 +132,17 @@ module KitchenHooks
       chef_environment.save
     end
 
+    def notification event, type
+      case type
+      when 'kitchen upload'
+        %Q| <i>#{author(event)}</i> updated <a href="#{gitlab_url(event)}">the Kitchen</a></p> |
+      when 'cookbook upload'
+        %Q| <i>#{author(event)}</i> released <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> of <a href="#{gitlab_url(event)}">#{repo_name(event)}</a> |
+      when 'constraint application'
+        %Q| <i>#{author(event)}</i> constrained <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> with <a href="#{gitlab_url(event)}">#{repo_name(event)}</a> |
+      end.strip
+    end
+
     def author event
       event['user_name']
     end
@@ -155,6 +166,11 @@ module KitchenHooks
     def gitlab_url event
       url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
       "#{url}/commit/#{event['after']}"
+    end
+
+    def gitlab_tag_url event
+      url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
+      "#{url}/commits/#{tag_name(event)}"
     end
 
     def latest_commit event

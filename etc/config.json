@@ -1,14 +1,10 @@
 {
-  "email": {
-    "user": "chef-upload@bluejeansnet.com",
-    "port": 25,
-    "server": "10.4.5.7",
-    "recipient": "sclemmer@bluejeans.com"
+  "hipchat": {
+    "nick": "Kitchen (bot)",
+    "room": "test",
+    "token": "YOUR_V1_HIPCHAT_TOKEN"
   },
-  "servers": [
-    {
-      "name": "Prod",
-      "knife": "~/.chef/knife.rb"
-    }
-  ]
+  "knives": {
+    "prod": "~/.chef/knife.rb"
+  }
 }

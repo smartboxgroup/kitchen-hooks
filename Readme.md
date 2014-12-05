@@ -34,12 +34,17 @@ Use the `server` command to start the WebHook receiver:
 
 * Add indication of success or failure
 * Add custom timeline icons to distinguish event types
-* Link to version with `.../commits/vX.Y.Z` where appropriate
-* Replace "modified" with more appropriate verb where appropriate
 * Use Ridley for data bag, role, and environment uploads to remove Chef dependency
 
 
 ## Changelog
+
+### 1.4
+
+* Simplified configuration format (breaking!)
+* Added support for HipChat notifications when configured
+* Linked to tag name with `.../commits/TAG` where appropriate
+* Replaced "modified" with more appropriate verb where appropriate
 
 ### 1.3
 

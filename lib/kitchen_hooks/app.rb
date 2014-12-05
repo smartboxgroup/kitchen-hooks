@@ -2,6 +2,7 @@ require 'pathname'
 require 'thread'
 require 'json'
 
+require 'hipchat'
 require 'daybreak'
 require 'sinatra/base'
 
@@ -22,8 +23,14 @@ module KitchenHooks
     end
 
     def self.config! config
-      @@knives = config['servers'].map do |s|
-        Pathname.new(s['knife']).expand_path.realpath.to_s
+      @@hipchat = nil
+      if config['hipchat']
+        @@hipchat = HipChat::Client.new config['hipchat']['token']
+        @@hipchat_nick = config['hipchat']['nick'] || raise('No HipChat "nick" provided')
+        @@hipchat_room = config['hipchat']['room'] || raise('No HipChat "room" provided')
+      end
+      @@knives = config['knives'].map do |_, knife|
+        Pathname.new(knife).expand_path.realpath.to_s
       end
     end
 
@@ -62,6 +69,16 @@ module KitchenHooks
 
     def db ; @@db end
 
+    def hipchat message, color='green', notify=false
+      return if @@hipchat.nil?
+      @@hipchat[@@hipchat_room].send @@hipchat_nick, message, \
+        color: color, notify: notify, message_format: 'html'
+    end
+
+    def notify event, type
+      hipchat notification(event, type)
+    end
+
     def mark event, type
       db.synchronize do
         db[Time.now.to_f] = {
@@ -69,6 +86,7 @@ module KitchenHooks
           event: event
         }
       end
+      notify event, type
     end
 
     def process event
@@ -80,7 +98,7 @@ module KitchenHooks
       if tagged_commit_to_cookbook?(event) &&
          tag_name(event) =~ /^v\d+/ # Tagged with version we're releasing
         perform_cookbook_upload(event, knives)
-        mark event, 'cookbok upload'
+        mark event, 'cookbook upload'
       end
 
       if tagged_commit_to_realm?(event) &&
