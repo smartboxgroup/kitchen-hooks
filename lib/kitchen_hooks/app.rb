@@ -1,4 +1,5 @@
 require 'pathname'
+require 'thread'
 require 'json'
 
 require 'daybreak'
@@ -16,26 +17,8 @@ module KitchenHooks
 
     include KitchenHooks::Helpers
 
-    def self.db! db_path
-      @@db = Daybreak::DB.new db_path
-    end
-
-    def db &block
-      if block_given?
-        @@db.synchronize do
-          yield
-        end
-      else
-        return @@db
-      end
-    end
-
-    def database
-      db_entries = {}
-      db.each do |k, v|
-        db_entries[k] = v
-      end
-      return db_entries.sort_by { |stamp, _| stamp }
+    def self.db! path
+      @@db = Daybreak::DB.new path
     end
 
     def self.config! config
@@ -44,12 +27,14 @@ module KitchenHooks
       end
     end
 
-    def knives ; @@knives ||= [] end
-
 
     get '/' do
+      db_entries = {}
+      db.each do |k, v|
+        db_entries[k] = v
+      end
       erb :app, locals: {
-        database: database
+        database: db_entries.sort_by { |stamp, _| stamp }
       }
     end
 
@@ -63,50 +48,48 @@ module KitchenHooks
         :disposition => 'inline'
     end
 
-
     post '/' do
       request.body.rewind
       event = JSON::parse request.body.read
+      Thread.new do
+        process event
+      end
+    end
 
+
+  private
+    def knives ; @@knives ||= [] end
+
+    def db ; @@db end
+
+    def mark event, type
+      db.synchronize do
+        db[Time.now.to_f] = {
+          type: type,
+          event: event
+        }
+      end
+    end
+
+    def process event
       if commit_to_kitchen?(event)
         perform_kitchen_upload(event, knives)
-        save_event \
-          type: 'kitchen upload',
-          author: author(event),
-          repo: repo_name(event),
-          raw: event
+        mark event, 'kitchen upload'
       end
 
       if tagged_commit_to_cookbook?(event) &&
          tag_name(event) =~ /^v\d+/ # Tagged with version we're releasing
         perform_cookbook_upload(event, knives)
-        save_event \
-          type: 'cookbook upload',
-          author: author(event),
-          repo: repo_name(event),
-          cookbook: cookbook_name(event),
-          raw: event
+        mark event, 'cookbok upload'
       end
 
       if tagged_commit_to_realm?(event) &&
          tag_name(event) =~ /^bjn_/ # Tagged with environment we're pinning
         perform_constraint_application(event, knives)
-        save_event \
-          type: 'constraint application',
-          author: author(event),
-          repo: repo_name(event),
-          cookbook: cookbook_name(event),
-          raw: event
+        mark event, 'constraint application'
       end
 
       db.flush
-    end
-
-  private
-    def save_event e
-      db do
-        db[Time.now.to_f] = e
-      end
     end
   end
 end

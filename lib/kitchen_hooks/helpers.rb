@@ -152,13 +152,9 @@ module KitchenHooks
       event['repository']['url'].sub(':', '/').sub('@', '://')
     end
 
-    def gitlab_url event, commit_method
+    def gitlab_url event
       url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
-      if commit_method == :tagged_commit
-        "#{url}/commits/#{self.send(commit_method, event)}"
-      else
-        "#{url}/commit/#{self.send(commit_method, event)}"
-      end
+      "#{url}/commit/#{event['after']}"
     end
 
     def latest_commit event

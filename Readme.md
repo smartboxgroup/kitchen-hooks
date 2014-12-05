@@ -40,6 +40,9 @@ Use the `server` command to start the WebHook receiver:
 ### 1.3
 
 * Added local database to store history (Daybreak), visualized on homepage
+* Added `database` option to `server` command
+* Corrected GitLab link for tagged commits
+* Process events in the background to avoid duplicate entries [INF-6040]
 
 ### 1.2
 
