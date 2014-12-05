@@ -35,6 +35,7 @@ Use the `server` command to start the WebHook receiver:
 * Add indication of success or failure
 * Add custom timeline icons to distinguish event types
 * Use Ridley for data bag, role, and environment uploads to remove Chef dependency
+* Only make changes on commits to `master` branches
 
 
 ## Changelog
@@ -45,6 +46,7 @@ Use the `server` command to start the WebHook receiver:
 * Added support for HipChat notifications when configured
 * Linked to tag name with `.../commits/TAG` where appropriate
 * Replaced "modified" with more appropriate verb where appropriate
+* Corrected `berks upload` functionality (`berks install` first)
 
 ### 1.3
 

@@ -59,6 +59,7 @@ module KitchenHooks
       App.set :environment, options.environment
       App.set :port, options.port
       App.set :bind, options.bind
+      App.set :raise_errors, true
       App.run!
     end
   end

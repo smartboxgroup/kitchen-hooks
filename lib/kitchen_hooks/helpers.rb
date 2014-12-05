@@ -1,4 +1,5 @@
 require 'shellwords'
+require 'tempfile'
 require 'json'
 
 require 'git'
@@ -12,54 +13,68 @@ module KitchenHooks
   module Helpers
     def perform_constraint_application event, knives
       tag = tag_name event
-      tmp_clone event, :tagged_commit do
-        logger.info 'Applying constraints'
-        constraints = lockfile_constraints 'Berksfile.lock'
-        environment = tag_name event
-        knives.each do |k|
-          apply_constraints constraints, environment, k
+      tmp_clone event, :tagged_commit do |dir|
+        Dir.chdir dir do
+          logger.info 'Applying constraints'
+          constraints = lockfile_constraints 'Berksfile.lock'
+          environment = tag_name event
+          knives.each do |k|
+            apply_constraints constraints, environment, k
+          end
         end
       end
     end
 
     def perform_kitchen_upload event, knives
-      tmp_clone event, :latest_commit do
-        logger.info 'Uploading data_bags'
-        with_each_knife 'upload data_bags --chef-repo-path .', knives
+      tmp_clone event, :latest_commit do |clone|
+        Dir.chdir clone do
+          logger.info 'Uploading data_bags'
+          with_each_knife 'upload data_bags --chef-repo-path .', knives
 
-        logger.info 'Uploading roles'
-        with_each_knife 'upload roles --chef-repo-path .', knives
+          logger.info 'Uploading roles'
+          with_each_knife 'upload roles --chef-repo-path .', knives
 
-        logger.info 'Uploading environments'
-        Dir['environments/*'].each do |e|
-          knives.each do |k|
-            upload_environment e, k
+          logger.info 'Uploading environments'
+          Dir['environments/*'].each do |e|
+            knives.each do |k|
+              upload_environment e, k
+            end
           end
         end
       end
     end
 
     def perform_cookbook_upload event, knives
-      tmp_clone event, :tagged_commit do
-        tagged_version = tag_name(event).delete('v')
-        cookbook_version = File.read('VERSION').strip
-        raise unless tagged_version == cookbook_version
-        logger.info 'Uploading cookbook'
-        with_each_knife "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+      berksfile = nil
 
-        if File::exist?('Berksfile.lock')
+      tmp_clone event, :tagged_commit do |clone|
+
+        Dir.chdir clone do
+          tagged_version = tag_name(event).delete('v')
+          cookbook_version = File.read('VERSION').strip
+          raise unless tagged_version == cookbook_version
+
+          logger.info 'Uploading cookbook'
+          with_each_knife "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+        end
+
+        berksfile = File::join clone, 'Berksfile'
+        berksfile_lock = berksfile + '.lock'
+
+        if File::exist? berksfile_lock
           logger.info 'Uploading dependencies'
           knives.each do |knife|
-            berks_upload knife
+            berks_upload berksfile, knife
           end
         end
       end
     end
 
-    def berks_upload knife, options={}
+    def berks_upload berksfile, knife, options={}
       ridley = Ridley::from_chef_config knife
       options.merge! \
-        berksfile: 'Berksfile',
+        berksfile: berksfile,
+        debug: true,
         freeze: true,
         validate: true,
         server_url: ridley.server_url,
@@ -75,9 +90,7 @@ module KitchenHooks
         dir = File::join tmp, cookbook_name(event)
         repo = Git.clone git_daemon_style_url(event), dir, log: $stdout
         repo.checkout self.send(commit_method, event)
-        Dir.chdir dir do
-          yield
-        end
+        yield dir
       end
     end
 
