@@ -56,16 +56,16 @@ module KitchenHooks
 
     def berks_upload knife, options={}
       ridley = Ridley::from_chef_config knife
-      options = {
-        berksfile: 'Berksfile', freeze: true, validate: true
-      }.merge(options).merge \
+      options.merge! \
+        berksfile: 'Berksfile',
+        freeze: true,
+        validate: true,
         server_url: ridley.server_url,
         client_name: ridley.client_name,
         client_key: ridley.client_key
       berksfile = Berkshelf::Berksfile.from_options(options)
-
-      # # TODO: Figure out why "berks upload" takes so damn long
-      # berksfile.upload([], options.symbolize_keys)
+      berksfile.install
+      berksfile.upload [], options
     end
 
     def tmp_clone event, commit_method, &block

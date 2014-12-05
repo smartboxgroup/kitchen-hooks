@@ -42,7 +42,6 @@ Use the `server` command to start the WebHook receiver:
 ### 1.4
 
 * Simplified configuration format (breaking!)
-* Disable `berks upload` functionality (needs more testing)
 * Added support for HipChat notifications when configured
 * Linked to tag name with `.../commits/TAG` where appropriate
 * Replaced "modified" with more appropriate verb where appropriate
