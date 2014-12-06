@@ -18,7 +18,13 @@
       </div>
       <div class="cd-timeline-content">
         <h2><%= type %></h2>
-        <p><%= notification entry %></p>
+        <% if entry[:error] && entry[:event] %>
+          <p><%= notification entry %>. Triggered when <%= generic_details(entry[:event]) %></p>
+        <% elsif entry[:error] # Failed before event generated %>
+          <p><%= notification entry %></p>
+        <% else %>
+          <p><%= notification entry %> by pushing <%= push_details(entry[:event]) %></p>
+        <% end %>
         <span class="cd-date"><time datetime="<%= datetime %>" pubdate="pubdate" class="time-ago" title="<%= datetime %>"><%= datetime %></time></span>
       </div>
     </div>

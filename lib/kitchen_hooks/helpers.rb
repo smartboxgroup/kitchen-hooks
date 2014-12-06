@@ -11,6 +11,7 @@ Berkshelf.logger = Logger.new $stdout
 
 module KitchenHooks
   module Helpers
+
     def perform_constraint_application event, knives
       tmp_clone event, :tagged_commit do |clone|
         Dir.chdir clone do
@@ -22,10 +23,14 @@ module KitchenHooks
           end
         end
       end
+
       return nil # no error
     end
 
+
     def perform_kitchen_upload event, knives
+      return false unless commit_to_master?(event)
+
       tmp_clone event, :latest_commit do |clone|
         Dir.chdir clone do
           logger.info 'Uploading data_bags'
@@ -42,14 +47,13 @@ module KitchenHooks
           end
         end
       end
+
       return nil # no error
     end
 
+
     def perform_cookbook_upload event, knives
-      berksfile = nil
-
       tmp_clone event, :tagged_commit do |clone|
-
         Dir.chdir clone do
           tagged_version = tag_name(event).delete('v')
           cookbook_version = File.read('VERSION').strip
@@ -73,6 +77,7 @@ module KitchenHooks
       return nil # no error
     end
 
+
     def berks_upload berksfile, knife, options={}
       ridley = Ridley::from_chef_config knife
       options.merge! \
@@ -88,6 +93,7 @@ module KitchenHooks
       berksfile.upload [], options
     end
 
+
     def tmp_clone event, commit_method, &block
       Dir.mktmpdir do |tmp|
         dir = File::join tmp, cookbook_name(event)
@@ -97,11 +103,13 @@ module KitchenHooks
       end
     end
 
+
     def with_each_knife command, knives
       knives.map do |k|
         `knife #{command} --config #{Shellwords::escape k}`
       end
     end
+
 
     def apply_constraints constraints, environment, knife
       # Ripped from Berkshelf::Cli::apply and Berkshelf::Lockfile::apply
@@ -115,6 +123,7 @@ module KitchenHooks
       chef_environment.save
     end
 
+
     def lockfile_constraints lockfile_path
       # Ripped from Berkshelf::Cli::apply and Berkshelf::Lockfile::apply
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/cli.rb
@@ -125,6 +134,7 @@ module KitchenHooks
         hash
       end
     end
+
 
     def upload_environment environment, knife
       # Load the local environment from a JSON file
@@ -152,12 +162,13 @@ module KitchenHooks
       chef_environment.save
     end
 
+
     def notification entry
       return entry[:error] if entry[:error]
       event = entry[:event]
       case entry[:type]
       when 'kitchen upload'
-        %Q| <i>#{author(event)}</i> updated <a href="#{gitlab_url(event)}">the Kitchen</a></p> |
+        %Q| <i>#{author(event)}</i> updated <a href="#{gitlab_url(event)}">the Kitchen</a> |
       when 'cookbook upload'
         %Q| <i>#{author(event)}</i> released <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> of <a href="#{gitlab_url(event)}">#{repo_name(event)}</a> |
       when 'constraint application'
@@ -165,39 +176,69 @@ module KitchenHooks
       end.strip
     end
 
+
+    def generic_details event
+      return if event.nil?
+      %Q|
+        <i>#{author(event)}</i> pushed #{push_details(event)}
+      |.strip
+    end
+
+
+    def push_details event
+      return if event.nil?
+      %Q|
+        <a href="#{gitlab_url(event)}">#{event['after']}</a> to <a href="#{repo_url(event)}">#{repo_name(event)}</a>
+      |.strip
+    end
+
+
     def author event
       event['user_name']
     end
+
 
     def repo_name event
       File::basename event['repository']['url'], '.git'
     end
 
+
     def cookbook_name event
       repo_name(event).sub /^(app|base|realm|fork)_/, 'bjn_'
     end
+
 
     def cookbook_repo? event
       repo_name(event) =~ /^(app|base|realm|fork)_/
     end
 
+
+    def repo_url event
+      git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
+    end
+
+
     def git_daemon_style_url event
       event['repository']['url'].sub(':', '/').sub('@', '://')
     end
+
 
     def gitlab_url event
       url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
       "#{url}/commit/#{event['after']}"
     end
 
+
     def gitlab_tag_url event
       url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
       "#{url}/commits/#{tag_name(event)}"
     end
 
+
     def latest_commit event
       event['commits'].last['id']
     end
+
 
     def tagged_commit event
       event['ref'] =~ %r{/tags/(.*)$}
@@ -206,19 +247,28 @@ module KitchenHooks
 
     alias_method :tag_name, :tagged_commit
 
+
+    def commit_to_master? event
+      event['ref'] == 'refs/heads/master'
+    end
+
+
     def not_deleted? event
       event['after'] != '0000000000000000000000000000000000000000'
     end
 
+
     def commit_to_kitchen? event
       repo_name(event) == 'kitchen' && not_deleted?(event)
     end
+
 
     def tagged_commit_to_cookbook? event
       cookbook_repo?(event) &&
       event['ref'] =~ %r{/tags/} &&
       not_deleted?(event)
     end
+
 
     def tagged_commit_to_realm? event
       tagged_commit_to_cookbook?(event) &&

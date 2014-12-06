@@ -33,14 +33,13 @@ Use the `server` command to start the WebHook receiver:
 ## TODO
 
 * Use Ridley for data bag, role, and environment uploads to remove Chef dependency
-* Only make changes on commits to `master` branches
-
 
 ## Changelog
 
 ### 1.5
 
 * Add indication of success or failure
+* Only upload on commits to Kitchen `master` branch
 * Add custom timeline icons to distinguish event types
 
 ### 1.4
