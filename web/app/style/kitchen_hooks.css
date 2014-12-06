@@ -10,6 +10,10 @@ body {
   background: #d9534f;
 }
 
+.release .cd-timeline-img {
+  background: #5bc0de;
+}
+
 .cd-timeline-content {
   color: #4e5d6c;
 }

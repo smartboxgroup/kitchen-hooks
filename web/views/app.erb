@@ -14,6 +14,8 @@
           <img src="/vendor/img/shield.svg" alt="Shield">
         <% when 'failure' %>
           <img src="/vendor/img/error.svg" alt="Error">
+        <% when 'release' %>
+          <img src="/vendor/img/cube.svg" alt="Cube">
         <% end %>
       </div>
       <div class="cd-timeline-content">
@@ -21,6 +23,8 @@
         <% if entry[:error] && entry[:event] %>
           <p><%= notification entry %>. Triggered when <%= generic_details(entry[:event]) %></p>
         <% elsif entry[:error] # Failed before event generated %>
+          <p><%= notification entry %></p>
+        <% elsif type == 'release' %>
           <p><%= notification entry %></p>
         <% else %>
           <p><%= notification entry %> by pushing <%= push_details(entry[:event]) %></p>

@@ -36,9 +36,10 @@ module KitchenHooks
 
 
     get '/' do
+      process_release
       db_entries = {}
       db.each do |k, v|
-        db_entries[k] = v
+        db_entries[k] = v unless k == 'meta'
       end
       erb :app, locals: {
         database: db_entries.sort_by { |stamp, _| stamp }
@@ -71,7 +72,7 @@ module KitchenHooks
 
     def db ; @@db end
 
-    def hipchat message, color='purple'
+    def hipchat message, color
       return if @@hipchat.nil?
       @@hipchat[@@hipchat_room].send @@hipchat_nick, message, \
         color: color, notify: false, message_format: 'html'
@@ -79,7 +80,11 @@ module KitchenHooks
 
 
     def notify entry
-      color = entry[:error] ? 'red' : 'green'
+      color = case entry[:type]
+      when 'failure' ; 'red'
+      when 'release' ; 'purple'
+      else ; 'green'
+      end
       hipchat notification(entry), color
     end
 
@@ -98,6 +103,16 @@ module KitchenHooks
       notify entry
     end
 
+
+    def process_release version=KitchenHooks::VERSION
+      db['meta'] ||= {}
+      return if db['meta']['version'] == version
+      mark version, 'release'
+      db.synchronize do
+        db['meta']['version'] = version
+      end
+      db.flush
+    end
 
     def process event
       if event.nil? # JSON parse failed

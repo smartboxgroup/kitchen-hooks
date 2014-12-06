@@ -38,6 +38,7 @@ Use the `server` command to start the WebHook receiver:
 
 ### 1.5
 
+* Add release notifications
 * Add indication of success or failure
 * Only upload on commits to Kitchen `master` branch
 * Add custom timeline icons to distinguish event types

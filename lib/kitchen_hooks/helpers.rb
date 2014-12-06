@@ -173,6 +173,8 @@ module KitchenHooks
         %Q| <i>#{author(event)}</i> released <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> of <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> |
       when 'constraint application'
         %Q| <i>#{author(event)}</i> constrained <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> with <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> |
+      when 'release'
+        %Q| Kitchen Hooks <b>v#{event}</b> released! |
       end.strip
     end
 
