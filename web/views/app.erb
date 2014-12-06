@@ -6,7 +6,14 @@
     <% datetime = Time.at(timestamp).iso8601 %>
     <div class="cd-timeline-block">
       <div class="cd-timeline-img">
-        <img src="/vendor/img/cd-icon.svg" alt="Picture">
+        <% case type %>
+        <% when 'kitchen upload' %>
+          <img src="/vendor/img/cutlery.svg" alt="Cutlery">
+        <% when 'cookbook upload' %>
+          <img src="/vendor/img/book.svg" alt="Book">
+        <% when 'constraint application' %>
+          <img src="/vendor/img/shield.svg" alt="Shield">
+        <% end %>
       </div>
       <div class="cd-timeline-content">
         <h2><%= type %></h2>
