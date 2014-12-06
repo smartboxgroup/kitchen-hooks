@@ -170,9 +170,9 @@ module KitchenHooks
       when 'kitchen upload'
         %Q| <i>#{author(event)}</i> updated <a href="#{gitlab_url(event)}">the Kitchen</a> |
       when 'cookbook upload'
-        %Q| <i>#{author(event)}</i> released <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> of <a href="#{gitlab_url(event)}">#{repo_name(event)}</a> |
+        %Q| <i>#{author(event)}</i> released <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> of <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> |
       when 'constraint application'
-        %Q| <i>#{author(event)}</i> constrained <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> with <a href="#{gitlab_url(event)}">#{repo_name(event)}</a> |
+        %Q| <i>#{author(event)}</i> constrained <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> with <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> |
       end.strip
     end
 

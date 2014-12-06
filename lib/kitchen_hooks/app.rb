@@ -64,20 +64,25 @@ module KitchenHooks
     end
 
 
+
   private
+
     def knives ; @@knives ||= [] end
 
     def db ; @@db end
 
-    def hipchat message, color='green', notify=false
+    def hipchat message, color='purple'
       return if @@hipchat.nil?
       @@hipchat[@@hipchat_room].send @@hipchat_nick, message, \
-        color: color, notify: notify, message_format: 'html'
+        color: color, notify: false, message_format: 'html'
     end
 
+
     def notify entry
-      hipchat notification(entry)
+      color = entry[:error] ? 'red' : 'green'
+      hipchat notification(entry), color
     end
+
 
     # error == nil   => success
     # error == false => nop
@@ -92,6 +97,7 @@ module KitchenHooks
       db.flush
       notify entry
     end
+
 
     def process event
       if event.nil? # JSON parse failed
