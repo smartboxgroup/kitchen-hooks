@@ -1,10 +1,4 @@
 {
-  "hipchat": {
-    "nick": "Kitchen (bot)",
-    "room": "test",
-    "token": "YOUR_V1_HIPCHAT_TOKEN"
-  },
-  "knives": {
-    "prod": "~/.chef/knife.rb"
-  }
+  "hipchat": null,
+  "knives": {}
 }

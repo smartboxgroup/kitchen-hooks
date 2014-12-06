@@ -57,7 +57,7 @@ module KitchenHooks
 
     post '/' do
       request.body.rewind
-      event = JSON::parse request.body.read
+      event = JSON::parse request.body.read rescue nil
       Thread.new do
         process event
       end
@@ -75,39 +75,45 @@ module KitchenHooks
         color: color, notify: notify, message_format: 'html'
     end
 
-    def notify event, type
-      hipchat notification(event, type)
+    def notify entry
+      hipchat notification(entry)
     end
 
-    def mark event, type
+    def mark event, type, error
+      entry = { type: type, event: event }
+      entry.merge!(error: error) if error
       db.synchronize do
-        db[Time.now.to_f] = {
-          type: type,
-          event: event
-        }
+        db[Time.now.to_f] = entry
       end
-      notify event, type
+      db.flush
+      notify entry
     end
 
     def process event
+      if event.nil? # JSON parse failed
+        mark event, 'failure', 'Could not parse WebHook payload'        
+        return
+      end
+
       if commit_to_kitchen?(event)
-        perform_kitchen_upload(event, knives)
-        mark event, 'kitchen upload'
+        error = perform_kitchen_upload(event, knives) \
+          rescue 'Unable to perform kitchen upload'
+        mark event, 'kitchen upload', error
       end
 
       if tagged_commit_to_cookbook?(event) &&
-         tag_name(event) =~ /^v\d+/ # Tagged with version we're releasing
-        perform_cookbook_upload(event, knives)
-        mark event, 'cookbook upload'
+         tag_name(event) =~ /^v\d+/ # Cookbooks tagged with a version
+        error = perform_cookbook_upload(event, knives) \
+          rescue 'Unable to perform cookbook upload'
+        mark event, 'cookbook upload', error
       end
 
       if tagged_commit_to_realm?(event) &&
-         tag_name(event) =~ /^bjn_/ # Tagged with environment we're pinning
-        perform_constraint_application(event, knives)
-        mark event, 'constraint application'
+         tag_name(event) =~ /^bjn_/ # Realms tagged with an environment
+        error = perform_constraint_application(event, knives) \
+          rescue 'Unable to apply constraints'
+        mark event, 'constraint application', error
       end
-
-      db.flush
     end
   end
 end

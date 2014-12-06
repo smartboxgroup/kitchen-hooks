@@ -3,7 +3,11 @@ body {
 }
 
 .cd-timeline-img {
-  background: #75ce66;
+  background: #5cb85c;
+}
+
+.failure .cd-timeline-img {
+  background: #d9534f;
 }
 
 .cd-timeline-content {

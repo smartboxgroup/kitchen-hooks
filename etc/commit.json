@@ -6,51 +6,11 @@
   "user_name": "Sean Clemmer",
   "repository": {
     "name": "Kitchen Hooks",
-    "url": "git@git.bluejeansnet.com:kitchen-hooks.git",
+    "url": "git@git.bluejeansnet.com:chef/kitchen.git",
     "description": "",
-    "homepage": "http://git.bluejeansnet.com/kitchen-hooks"
+    "homepage": "http://git.bluejeansnet.com/kitchen"
   },
   "commits": [
-    {
-      "id": "b635fcb8f05e7503c7e6255a6b3e0cebbf487df3",
-      "message": "Initial script",
-      "timestamp": "2014-11-20T15:45:54-08:00",
-      "url": "http://git.bluejeansnet.com/kitchen-hooks/commit/b635fcb8f05e7503c7e6255a6b3e0cebbf487df3",
-      "author": {
-        "name": "Kelly Wong",
-        "email": "kelly@bluejeans.com"
-      }
-    },
-    {
-      "id": "b76fd9058de0f0236605f1ac12aaa405e905a383",
-      "message": "Add notifications",
-      "timestamp": "2014-11-24T18:23:21-08:00",
-      "url": "http://git.bluejeansnet.com/kitchen-hooks/commit/b76fd9058de0f0236605f1ac12aaa405e905a383",
-      "author": {
-        "name": "Kelly Wong",
-        "email": "kelly@bluejeans.com"
-      }
-    },
-    {
-      "id": "750a5fbb0741977a2b3e5b87e680b8e1beec001e",
-      "message": "Make a gem",
-      "timestamp": "2014-11-25T17:47:16-08:00",
-      "url": "http://git.bluejeansnet.com/kitchen-hooks/commit/750a5fbb0741977a2b3e5b87e680b8e1beec001e",
-      "author": {
-        "name": "Kelly Wong",
-        "email": "kelly@bluejeans.com"
-      }
-    },
-    {
-      "id": "e3727928632d4ac30599c6726e9532b5e0cd86d7",
-      "message": "Remove MIT license",
-      "timestamp": "2014-11-25T18:29:17-08:00",
-      "url": "http://git.bluejeansnet.com/kitchen-hooks/commit/e3727928632d4ac30599c6726e9532b5e0cd86d7",
-      "author": {
-        "name": "Kelly Wong",
-        "email": "kelly@bluejeans.com"
-      }
-    },
     {
       "id": "fb38bcc884a0579cb52836b00589bca653a9c229",
       "message": "Update readme",

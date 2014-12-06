@@ -12,9 +12,8 @@ Berkshelf.logger = Logger.new $stdout
 module KitchenHooks
   module Helpers
     def perform_constraint_application event, knives
-      tag = tag_name event
-      tmp_clone event, :tagged_commit do |dir|
-        Dir.chdir dir do
+      tmp_clone event, :tagged_commit do |clone|
+        Dir.chdir clone do
           logger.info 'Applying constraints'
           constraints = lockfile_constraints 'Berksfile.lock'
           environment = tag_name event
@@ -23,6 +22,7 @@ module KitchenHooks
           end
         end
       end
+      return nil # no error
     end
 
     def perform_kitchen_upload event, knives
@@ -42,6 +42,7 @@ module KitchenHooks
           end
         end
       end
+      return nil # no error
     end
 
     def perform_cookbook_upload event, knives
@@ -68,6 +69,8 @@ module KitchenHooks
           end
         end
       end
+
+      return nil # no error
     end
 
     def berks_upload berksfile, knife, options={}
@@ -149,8 +152,10 @@ module KitchenHooks
       chef_environment.save
     end
 
-    def notification event, type
-      case type
+    def notification entry
+      return entry[:error] if entry[:error]
+      event = entry[:event]
+      case entry[:type]
       when 'kitchen upload'
         %Q| <i>#{author(event)}</i> updated <a href="#{gitlab_url(event)}">the Kitchen</a></p> |
       when 'cookbook upload'
