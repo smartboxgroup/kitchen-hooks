@@ -22,9 +22,9 @@ module KitchenHooks
       @@db = Daybreak::DB.new path
     end
 
-    def self.close!
-      @@db.close
-    end
+    def self.tmp! dir ; @@tmp = dir end
+
+    def self.close! ; @@db.close end
 
     def self.config! config
       @@hipchat = nil
@@ -71,6 +71,7 @@ module KitchenHooks
 
 
   private
+    def tmp ; @@tmp ||= '/tmp' end
 
     def knives ; @@knives ||= [] end
 
@@ -119,7 +120,7 @@ module KitchenHooks
 
     def process event
       if event.nil? # JSON parse failed
-        mark event, 'failure', 'Could not parse WebHook payload'        
+        mark event, 'failure', 'Could not parse WebHook payload'
         return
       end
 
@@ -127,7 +128,7 @@ module KitchenHooks
         possible_error = begin
           perform_kitchen_upload event, knives
         rescue Exception => e
-          report_error e, 'Could not perform kitchen upload'
+          report_error e, 'Could not perform kitchen upload: <i>%s</i>' % e.message
         end
         mark event, 'kitchen upload', possible_error
       end
@@ -137,7 +138,7 @@ module KitchenHooks
         possible_error = begin
           perform_cookbook_upload event, knives
         rescue Exception => e
-          report_error e, 'Could not perform cookbook upload'
+          report_error e, 'Could not perform cookbook upload: <i>%s</i>' % e.message
         end
         mark event, 'cookbook upload', possible_error
       end
@@ -147,7 +148,7 @@ module KitchenHooks
         possible_error = begin
           perform_constraint_application event, knives
         rescue Exception => e
-          report_error e, 'Could not apply constraints'
+          report_error e, 'Could not apply constraints: <i>%s</i>' % e.message
         end
         mark event, 'constraint application', possible_error
       end

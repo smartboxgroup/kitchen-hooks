@@ -1,3 +1,4 @@
+require 'securerandom'
 require 'shellwords'
 require 'fileutils'
 require 'tempfile'
@@ -8,6 +9,7 @@ require 'ridley'
 require 'berkshelf'
 
 
+Celluloid.logger = nil
 Berkshelf.logger = Logger.new $stdout
 
 module KitchenHooks
@@ -24,16 +26,20 @@ module KitchenHooks
 
     def perform_constraint_application event, knives
       logger.debug 'started perform_constraint_application event=%s, knives=%s' % [
-        event.inspect, knives.inspect
+        event['after'], knives.inspect
       ]
+
       tmp_clone event, :tagged_commit do |clone|
         Dir.chdir clone do
+
           logger.info 'Applying constraints'
           constraints = lockfile_constraints 'Berksfile.lock'
           environment = tag_name event
           knives.each do |k|
             apply_constraints constraints, environment, k
+            verify_constraints constraints, environment, k
           end
+
         end
       end
 
@@ -45,7 +51,7 @@ module KitchenHooks
     def perform_kitchen_upload event, knives
       return false unless commit_to_master?(event)
       logger.debug 'started perform_kitchen_upload event=%s, knives=%s' % [
-        event.inspect, knives.inspect
+        event['after'], knives.inspect
       ]
 
       tmp_clone event, :latest_commit do |clone|
@@ -72,7 +78,7 @@ module KitchenHooks
 
     def perform_cookbook_upload event, knives
       logger.debug 'started perform_cookbook_upload event=%s, knives=%s' % [
-        event.inspect, knives.inspect
+        event['after'], knives.inspect
       ]
 
       tmp_clone event, :tagged_commit do |clone|
@@ -124,17 +130,27 @@ module KitchenHooks
 
 
     def tmp_clone event, commit_method, &block
-      logger.debug 'started tmp_clone event=%s, commit_method=%s' % [
-        event.inspect, commit_method.inspect
+      logger.debug 'starting tmp_clone event=%s, commit_method=%s' % [
+        event['after'], commit_method.inspect
       ]
-      Dir.mktmpdir do |tmp|
-        dir = File::join tmp, Time.now.to_f.to_s, cookbook_name(event)
-        FileUtils.mkdir_p dir
-        repo = Git.clone git_daemon_style_url(event), dir, log: $stdout
-        commit = self.send(commit_method, event)
-        repo.checkout commit
-        yield dir
-      end
+
+      root = File::join tmp, SecureRandom.hex
+      dir = File::join root, Time.now.to_f.to_s, cookbook_name(event)
+      FileUtils.mkdir_p dir
+
+      repo = Git.clone git_daemon_style_url(event), dir, log: $stdout
+
+      commit = self.send(commit_method, event)
+
+      logger.debug 'creating tmp_clone dir=%s, commit=%s' % [
+        dir.inspect, commit.inspect
+      ]
+
+      repo.checkout commit
+
+      yield dir
+
+      FileUtils.rm_rf root
       logger.debug 'finished tmp_clone'
     end
 
@@ -148,16 +164,32 @@ module KitchenHooks
     end
 
 
+    def get_environment environment, knife
+      ridley = Ridley::from_chef_config knife
+      ridley.environment.find environment
+    end
+
+
+    def verify_constraints constraints, environment, knife
+      logger.debug 'started verify_constraints environment=%s, knife=%s' % [
+        environment.inspect, knife.inspect
+      ]
+      chef_environment = get_environment environment, knife
+      unless constraints == chef_environment.cookbook_versions
+        raise 'Environment did not match constraints'
+      end
+      logger.debug 'finished verify_constraints: %s' % environment
+    end
+
+
     def apply_constraints constraints, environment, knife
       # Ripped from Berkshelf::Cli::apply and Berkshelf::Lockfile::apply
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/cli.rb
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/lockfile.rb
-      logger.debug 'started apply_constraints constraints=%s, environment=%s, knife=%s' % [
-        constraints.inspect, environment.inspect, knife.inspect
+      logger.debug 'started apply_constraints environment=%s, knife=%s' % [
+        environment.inspect, knife.inspect
       ]
-      Celluloid.logger = nil
-      ridley = Ridley::from_chef_config knife
-      chef_environment = ridley.environment.find(environment)
+      chef_environment = get_environment environment, knife
       raise 'Could not find environment "%s"' % environment if chef_environment.nil?
       chef_environment.cookbook_versions = constraints
       chef_environment.save

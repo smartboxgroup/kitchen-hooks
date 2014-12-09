@@ -55,8 +55,14 @@ module KitchenHooks
       aliases: %w[ -d ],
       desc: 'Location of application database',
       default: '/etc/kitchen_hooks/app.db'
+    option :tmpdir, \
+      type: :string,
+      aliases: %w[ -t ],
+      desc: 'Location of temporary directory',
+      default: '/tmp'
     def server
       App.db! options.database
+      App.tmp! options.tmpdir
       App.config! JSON::parse(File.read(options.config))
       App.set :environment, options.environment
       App.set :port, options.port
