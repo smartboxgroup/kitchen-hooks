@@ -1,4 +1,5 @@
 require 'shellwords'
+require 'fileutils'
 require 'tempfile'
 require 'json'
 
@@ -24,7 +25,8 @@ module KitchenHooks
         end
       end
 
-      return nil # no error
+      logger.info "finished perform_constraint_application: #{event['after']}"
+      return true # no error
     end
 
 
@@ -48,7 +50,8 @@ module KitchenHooks
         end
       end
 
-      return nil # no error
+      logger.info "finished perform_kitchen_upload: #{event['after']}"
+      return true # no error
     end
 
 
@@ -57,7 +60,9 @@ module KitchenHooks
         Dir.chdir clone do
           tagged_version = tag_name(event).delete('v')
           cookbook_version = File.read('VERSION').strip
-          raise unless tagged_version == cookbook_version
+          unless tagged_version == cookbook_version
+            raise 'Tagged version does not match cookbook version'
+          end
 
           logger.info 'Uploading cookbook'
           with_each_knife "cookbook upload #{cookbook_name event} -o .. --freeze", knives
@@ -74,7 +79,8 @@ module KitchenHooks
         end
       end
 
-      return nil # no error
+      logger.info "finished cookbook_upload: #{event['after']}"
+      return true # no error
     end
 
 
@@ -98,8 +104,10 @@ module KitchenHooks
       Dir.mktmpdir do |tmp|
         dir = File::join tmp, cookbook_name(event)
         repo = Git.clone git_daemon_style_url(event), dir, log: $stdout
-        repo.checkout self.send(commit_method, event)
+        commit = self.send(commit_method, event)
+        repo.checkout commit
         yield dir
+        FileUtils.rm_rf dir
       end
     end
 

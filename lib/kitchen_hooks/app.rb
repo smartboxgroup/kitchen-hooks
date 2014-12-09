@@ -22,6 +22,10 @@ module KitchenHooks
       @@db = Daybreak::DB.new path
     end
 
+    def self.close!
+      @@db.close
+    end
+
     def self.config! config
       @@hipchat = nil
       if config['hipchat']
@@ -39,7 +43,7 @@ module KitchenHooks
       process_release
       db_entries = {}
       db.each do |k, v|
-        db_entries[k] = v unless k == 'meta'
+        db_entries[k] = v unless k =~ /^meta/
       end
       erb :app, locals: {
         database: db_entries.sort_by { |stamp, _| stamp }
@@ -90,10 +94,12 @@ module KitchenHooks
 
 
     # error == nil   => success
+    # error == true  => success
     # error == false => nop
     # otherwise      => failure
     def mark event, type, error=nil
       return if error == false
+      error = nil if error == true
       entry = { type: type, event: event }
       entry.merge!(error: error, type: 'failure') if error
       db.synchronize do
@@ -105,14 +111,19 @@ module KitchenHooks
 
 
     def process_release version=KitchenHooks::VERSION
-      db['meta'] ||= {}
-      return if db['meta']['version'] == version
+      return if db['meta_version'] == version
+      db.set! 'meta_version', version
       mark version, 'release'
-      db.synchronize do
-        db['meta']['version'] = version
-      end
-      db.flush
     end
+
+
+    def err_out e, msg
+      logger.error msg
+      logger.error e.message
+      logger.error e.backtrace.inspect
+      msg
+    end
+
 
     def process event
       if event.nil? # JSON parse failed
@@ -121,22 +132,31 @@ module KitchenHooks
       end
 
       if commit_to_kitchen?(event)
-        possible_error = perform_kitchen_upload(event, knives) \
-          rescue 'Unable to perform kitchen upload'
+        possible_error = begin
+          perform_kitchen_upload(event, knives)
+        rescue Exception => e
+          err_out e, 'Could not perform kitchen upload'
+        end
         mark event, 'kitchen upload', possible_error
       end
 
       if tagged_commit_to_cookbook?(event) &&
          tag_name(event) =~ /^v\d+/ # Cookbooks tagged with a version
-        possible_error = perform_cookbook_upload(event, knives) \
-          rescue 'Unable to perform cookbook upload'
+        possible_error = begin
+          perform_cookbook_upload(event, knives)
+        rescue Exception => e
+          err_out e, 'Could not perform cookbook upload'
+        end
         mark event, 'cookbook upload', possible_error
       end
 
       if tagged_commit_to_realm?(event) &&
          tag_name(event) =~ /^bjn_/ # Realms tagged with an environment
-        possible_error = perform_constraint_application(event, knives) \
-          rescue 'Unable to apply constraints'
+        possible_error = begin
+          perform_constraint_application(event, knives)
+        rescue Exception => e
+          err_out e, 'Could not apply constraints'
+        end
         mark event, 'constraint application', possible_error
       end
     end

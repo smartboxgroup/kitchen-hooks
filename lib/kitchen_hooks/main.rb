@@ -60,7 +60,13 @@ module KitchenHooks
       App.set :port, options.port
       App.set :bind, options.bind
       App.set :raise_errors, true
+      App.set :dump_errors, true
+      App.set :show_exceptions, true
       App.run!
+
+      at_exit do
+        App.close!
+      end
     end
   end
 end

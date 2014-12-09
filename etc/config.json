@@ -1,11 +1,6 @@
 {
-  "hipchat": {
-    "nick": "Kitchen (bot)",
-    "room": "test",
-    "token": "YOUR_V1_API_TOKEN"
-  },
+  "hipchat": null,
   "knives": {
-    "user": "~/.chef/knife.rb",
-    "system": "/etc/chef/knife.rb"
+    "user": "~/.chef/knife.rb"
   }
 }

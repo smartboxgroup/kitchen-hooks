@@ -1,24 +1,24 @@
 {
   "before": "08f20548e398f634979047d0c8114260bcc2949a",
-  "after": "fb38bcc884a0579cb52836b00589bca653a9c229",
-  "ref": "refs/heads/master",
+  "after": "7b238ce9c6cff250db5a0b727b9661b618b82e1d",
+  "ref": "refs/tags/v1.5.1",
   "user_id": 645,
   "user_name": "Sean Clemmer",
   "repository": {
-    "name": "Kitchen Hooks",
-    "url": "git@git.bluejeansnet.com:chef/kitchen.git",
+    "name": "realm_logger",
+    "url": "git@git.bluejeansnet.com:chef/realm_logger.git",
     "description": "",
-    "homepage": "http://git.bluejeansnet.com/kitchen"
+    "homepage": "http://git.bluejeansnet.com/chef/realm_logger"
   },
   "commits": [
     {
-      "id": "fb38bcc884a0579cb52836b00589bca653a9c229",
-      "message": "Update readme",
+      "id": "7b238ce9c6cff250db5a0b727b9661b618b82e1d",
+      "message": "XYZ",
       "timestamp": "2014-11-25T18:30:57-08:00",
-      "url": "http://git.bluejeansnet.com/kitchen-hooks/commit/fb38bcc884a0579cb52836b00589bca653a9c229",
+      "url": "http://git.bluejeansnet.com/chef/realm_logger/commit/7b238ce9c6cff250db5a0b727b9661b618b82e1d",
       "author": {
-        "name": "Kelly Wong",
-        "email": "kelly@bluejeans.com"
+        "name": "Sean Clemmer",
+        "email": "sclemmer@bluejeans.com"
       }
     }
   ],
