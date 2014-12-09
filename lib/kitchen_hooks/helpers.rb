@@ -57,10 +57,10 @@ module KitchenHooks
       tmp_clone event, :latest_commit do |clone|
         Dir.chdir clone do
           logger.info 'Uploading data_bags'
-          with_each_knife 'upload data_bags --chef-repo-path .', knives
+          with_each_knife_do 'upload data_bags --chef-repo-path .', knives
 
           logger.info 'Uploading roles'
-          with_each_knife 'upload roles --chef-repo-path .', knives
+          with_each_knife_do 'upload roles --chef-repo-path .', knives
 
           logger.info 'Uploading environments'
           Dir['environments/*'].each do |e|
@@ -90,7 +90,7 @@ module KitchenHooks
           end
 
           logger.info 'Uploading cookbook'
-          with_each_knife "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+          with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
         end
 
         berksfile = File::join clone, 'Berksfile'
@@ -109,22 +109,45 @@ module KitchenHooks
     end
 
 
+    def berkshelf_config knife
+      ridley = Ridley::from_chef_config knife
+      config = {
+        chef: {
+          node_name: ridley.client_name,
+          client_key: ridley.client_key,
+          chef_server_url: ridley.server_url
+        },
+        ssl: {
+          verify: false
+        }
+      }
+      config_path = File.join tmp, "#{SecureRandom.hex}-berkshelf.json"
+      File.open(config_path, 'w') do |f|
+        f.puts JSON::pretty_generate config
+      end
+      return config_path
+    end
+
+
     def berks_upload berksfile, knife, options={}
       logger.debug 'started berks_upload berksfile=%s, knife=%s' % [
         berksfile.inspect, knife.inspect
       ]
-      ridley = Ridley::from_chef_config knife
-      options.merge! \
-        berksfile: berksfile,
-        debug: true,
-        freeze: true,
-        validate: true,
-        server_url: ridley.server_url,
-        client_name: ridley.client_name,
-        client_key: ridley.client_key
-      berksfile = Berkshelf::Berksfile.from_options(options)
-      berksfile.install
-      berksfile.upload [], options
+      config_path = berkshelf_config(knife)
+
+      cmd = "berks install --debug --berksfile %s" % [
+        Shellwords::escape(berksfile)
+      ]
+      logger.debug "berks_install: %s" % cmd
+      system cmd
+
+      cmd = "berks upload --debug --berksfile %s --config %s" % [
+        Shellwords::escape(berksfile), Shellwords::escape(config_path)
+      ]
+      logger.debug "berks_upload: %s" % cmd
+      system cmd
+
+      FileUtils.rm_rf config_path
       logger.debug 'finished berks_upload: %s' % berksfile
     end
 
@@ -155,9 +178,13 @@ module KitchenHooks
     end
 
 
+    def with_each_knife_do command, knives
+      with_each_knife "knife #{command} --config %{knife}", knives
+    end
+
     def with_each_knife command, knives
       knives.map do |k|
-        cmd = "knife #{command} --config #{Shellwords::escape k}"
+        cmd = command % { knife: Shellwords::escape(k) }
         logger.debug 'with_each_knife: %s' % cmd
         `#{cmd}`
       end
