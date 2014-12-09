@@ -117,14 +117,6 @@ module KitchenHooks
     end
 
 
-    def err_out e, msg
-      logger.error msg
-      logger.error e.message
-      logger.error e.backtrace.inspect
-      msg
-    end
-
-
     def process event
       if event.nil? # JSON parse failed
         mark event, 'failure', 'Could not parse WebHook payload'        
@@ -133,9 +125,9 @@ module KitchenHooks
 
       if commit_to_kitchen?(event)
         possible_error = begin
-          perform_kitchen_upload(event, knives)
+          perform_kitchen_upload event, knives
         rescue Exception => e
-          err_out e, 'Could not perform kitchen upload'
+          report_error e, 'Could not perform kitchen upload'
         end
         mark event, 'kitchen upload', possible_error
       end
@@ -143,9 +135,9 @@ module KitchenHooks
       if tagged_commit_to_cookbook?(event) &&
          tag_name(event) =~ /^v\d+/ # Cookbooks tagged with a version
         possible_error = begin
-          perform_cookbook_upload(event, knives)
+          perform_cookbook_upload event, knives
         rescue Exception => e
-          err_out e, 'Could not perform cookbook upload'
+          report_error e, 'Could not perform cookbook upload'
         end
         mark event, 'cookbook upload', possible_error
       end
@@ -153,9 +145,9 @@ module KitchenHooks
       if tagged_commit_to_realm?(event) &&
          tag_name(event) =~ /^bjn_/ # Realms tagged with an environment
         possible_error = begin
-          perform_constraint_application(event, knives)
+          perform_constraint_application event, knives
         rescue Exception => e
-          err_out e, 'Could not apply constraints'
+          report_error e, 'Could not apply constraints'
         end
         mark event, 'constraint application', possible_error
       end

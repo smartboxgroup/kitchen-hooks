@@ -13,6 +13,15 @@ Berkshelf.logger = Logger.new $stdout
 module KitchenHooks
   module Helpers
 
+    def report_error e, msg=nil
+      msg = e.message if msg.nil?
+      logger.error msg
+      logger.error e.message
+      logger.error e.backtrace.inspect
+      msg
+    end
+
+
     def perform_constraint_application event, knives
       tmp_clone event, :tagged_commit do |clone|
         Dir.chdir clone do
@@ -26,7 +35,7 @@ module KitchenHooks
       end
 
       logger.info "finished perform_constraint_application: #{event['after']}"
-      return true # no error
+      return # no error
     end
 
 
@@ -51,7 +60,7 @@ module KitchenHooks
       end
 
       logger.info "finished perform_kitchen_upload: #{event['after']}"
-      return true # no error
+      return # no error
     end
 
 
@@ -80,7 +89,7 @@ module KitchenHooks
       end
 
       logger.info "finished cookbook_upload: #{event['after']}"
-      return true # no error
+      return # no error
     end
 
 
@@ -102,12 +111,12 @@ module KitchenHooks
 
     def tmp_clone event, commit_method, &block
       Dir.mktmpdir do |tmp|
-        dir = File::join tmp, cookbook_name(event)
+        dir = File::join tmp, Time.now.to_f.to_s, cookbook_name(event)
+        FileUtils.mkdir_p dir
         repo = Git.clone git_daemon_style_url(event), dir, log: $stdout
         commit = self.send(commit_method, event)
         repo.checkout commit
         yield dir
-        FileUtils.rm_rf dir
       end
     end
 
