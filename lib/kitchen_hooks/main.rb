@@ -1,3 +1,5 @@
+require 'logger'
+
 require 'thor'
 
 require_relative 'app'
@@ -62,6 +64,7 @@ module KitchenHooks
       App.set :raise_errors, true
       App.set :dump_errors, true
       App.set :show_exceptions, true
+      App.set :logging, ::Logger::DEBUG
       App.run!
 
       at_exit do

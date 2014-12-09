@@ -23,6 +23,9 @@ module KitchenHooks
 
 
     def perform_constraint_application event, knives
+      logger.debug 'started perform_constraint_application event=%s, knives=%s' % [
+        event.inspect, knives.inspect
+      ]
       tmp_clone event, :tagged_commit do |clone|
         Dir.chdir clone do
           logger.info 'Applying constraints'
@@ -34,13 +37,16 @@ module KitchenHooks
         end
       end
 
-      logger.info "finished perform_constraint_application: #{event['after']}"
+      logger.debug "finished perform_constraint_application: #{event['after']}"
       return # no error
     end
 
 
     def perform_kitchen_upload event, knives
       return false unless commit_to_master?(event)
+      logger.debug 'started perform_kitchen_upload event=%s, knives=%s' % [
+        event.inspect, knives.inspect
+      ]
 
       tmp_clone event, :latest_commit do |clone|
         Dir.chdir clone do
@@ -59,12 +65,16 @@ module KitchenHooks
         end
       end
 
-      logger.info "finished perform_kitchen_upload: #{event['after']}"
+      logger.debug "finished perform_kitchen_upload: #{event['after']}"
       return # no error
     end
 
 
     def perform_cookbook_upload event, knives
+      logger.debug 'started perform_cookbook_upload event=%s, knives=%s' % [
+        event.inspect, knives.inspect
+      ]
+
       tmp_clone event, :tagged_commit do |clone|
         Dir.chdir clone do
           tagged_version = tag_name(event).delete('v')
@@ -88,12 +98,15 @@ module KitchenHooks
         end
       end
 
-      logger.info "finished cookbook_upload: #{event['after']}"
+      logger.debug "finished cookbook_upload: #{event['after']}"
       return # no error
     end
 
 
     def berks_upload berksfile, knife, options={}
+      logger.debug 'started berks_upload berksfile=%s, knife=%s' % [
+        berksfile.inspect, knife.inspect
+      ]
       ridley = Ridley::from_chef_config knife
       options.merge! \
         berksfile: berksfile,
@@ -106,10 +119,14 @@ module KitchenHooks
       berksfile = Berkshelf::Berksfile.from_options(options)
       berksfile.install
       berksfile.upload [], options
+      logger.debug 'finished berks_upload: %s' % berksfile
     end
 
 
     def tmp_clone event, commit_method, &block
+      logger.debug 'started tmp_clone event=%s, commit_method=%s' % [
+        event.inspect, commit_method.inspect
+      ]
       Dir.mktmpdir do |tmp|
         dir = File::join tmp, Time.now.to_f.to_s, cookbook_name(event)
         FileUtils.mkdir_p dir
@@ -118,12 +135,15 @@ module KitchenHooks
         repo.checkout commit
         yield dir
       end
+      logger.debug 'finished tmp_clone'
     end
 
 
     def with_each_knife command, knives
       knives.map do |k|
-        `knife #{command} --config #{Shellwords::escape k}`
+        cmd = "knife #{command} --config #{Shellwords::escape k}"
+        logger.debug 'with_each_knife: %s' % cmd
+        `#{cmd}`
       end
     end
 
@@ -132,12 +152,16 @@ module KitchenHooks
       # Ripped from Berkshelf::Cli::apply and Berkshelf::Lockfile::apply
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/cli.rb
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/lockfile.rb
+      logger.debug 'started apply_constraints constraints=%s, environment=%s, knife=%s' % [
+        constraints.inspect, environment.inspect, knife.inspect
+      ]
       Celluloid.logger = nil
       ridley = Ridley::from_chef_config knife
       chef_environment = ridley.environment.find(environment)
-      raise if chef_environment.nil?
+      raise 'Could not find environment "%s"' % environment if chef_environment.nil?
       chef_environment.cookbook_versions = constraints
       chef_environment.save
+      logger.debug 'finished apply_constraints: %s' % environment
     end
 
 
@@ -146,14 +170,19 @@ module KitchenHooks
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/cli.rb
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/lockfile.rb
       lockfile = Berkshelf::Lockfile.from_file lockfile_path
-      lockfile.graph.locks.inject({}) do |hash, (name, dependency)|
+      constraints = lockfile.graph.locks.inject({}) do |hash, (name, dependency)|
         hash[name] = "= #{dependency.locked_version.to_s}"
         hash
       end
+      logger.debug 'constraints: %s -> %s' % [ lockfile_path, constraints ]
+      return constraints
     end
 
 
     def upload_environment environment, knife
+      logger.debug 'started upload_environment environment=%s, knife=%s' % [
+        environment.inspect, knife.inspect
+      ]
       # Load the local environment from a JSON file
       local_environment = JSON::parse File.read(environment)
       local_environment.delete 'chef_type'
@@ -177,6 +206,7 @@ module KitchenHooks
 
       # Make it so!
       chef_environment.save
+      logger.debug 'finished upload_environment: %s' % environment
     end
 
 
