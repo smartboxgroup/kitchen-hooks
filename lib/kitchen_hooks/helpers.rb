@@ -98,6 +98,7 @@ module KitchenHooks
 
         if File::exist? berksfile_lock
           logger.info 'Uploading dependencies'
+          berks_install berksfile
           knives.each do |knife|
             berks_upload berksfile, knife
           end
@@ -129,23 +130,40 @@ module KitchenHooks
     end
 
 
-    def berks_upload berksfile, knife, options={}
-      logger.debug 'started berks_upload berksfile=%s, knife=%s' % [
-        berksfile.inspect, knife.inspect
-      ]
-      config_path = berkshelf_config(knife)
+    def berks_install berksfile
+      logger.debug 'started berks_install berksfile=%s' % berksfile.inspect
+      env_git_dir = ENV.delete 'GIT_DIR'
+      env_git_work_tree = ENV.delete 'GIT_WORK_TREE'
 
       cmd = "berks install --debug --berksfile %s" % [
         Shellwords::escape(berksfile)
       ]
       logger.debug "berks_install: %s" % cmd
       system cmd
+      raise 'Could not perform berks_install with config %s' % [
+        berksfile.inspect
+      ] unless $?.exitstatus.zero?
+
+      ENV['GIT_DIR'] = env_git_dir
+      ENV['GIT_WORK_TREE'] = env_git_work_tree
+      logger.debug 'finished berks_install: %s' % berksfile
+    end
+
+
+    def berks_upload berksfile, knife, options={}
+      logger.debug 'started berks_upload berksfile=%s, knife=%s' % [
+        berksfile.inspect, knife.inspect
+      ]
+      config_path = berkshelf_config(knife)
 
       cmd = "berks upload --debug --berksfile %s --config %s" % [
         Shellwords::escape(berksfile), Shellwords::escape(config_path)
       ]
       logger.debug "berks_upload: %s" % cmd
       system cmd
+      raise 'Could not perform berks_upload with config %s, knife %s' % [
+        berksfile.inspect, knife.inspect
+      ] unless $?.exitstatus.zero?
 
       FileUtils.rm_rf config_path
       logger.debug 'finished berks_upload: %s' % berksfile
@@ -186,7 +204,8 @@ module KitchenHooks
       knives.map do |k|
         cmd = command % { knife: Shellwords::escape(k) }
         logger.debug 'with_each_knife: %s' % cmd
-        `#{cmd}`
+        system cmd
+        # No error handling here; do that on "berks upload"
       end
     end
 
