@@ -24,6 +24,7 @@ module KitchenHooks
     end
 
 
+
     def perform_constraint_application event, knives
       logger.debug 'started perform_constraint_application event=%s, knives=%s' % [
         event['after'], knives.inspect
@@ -56,18 +57,7 @@ module KitchenHooks
 
       tmp_clone event, :latest_commit do |clone|
         Dir.chdir clone do
-          logger.info 'Uploading data_bags'
-          with_each_knife_do 'upload data_bags --chef-repo-path .', knives
-
-          logger.info 'Uploading roles'
-          with_each_knife_do 'upload roles --chef-repo-path .', knives
-
-          logger.info 'Uploading environments'
-          Dir['environments/*'].each do |e|
-            knives.each do |k|
-              upload_environment e, k
-            end
-          end
+          kitchen_upload knives
         end
       end
 
@@ -91,6 +81,9 @@ module KitchenHooks
 
           logger.info 'Uploading cookbook'
           with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+
+          logger.info 'Uploading bundled roles, environments, and data bags'
+          kitchen_upload knives
         end
 
         berksfile = File::join clone, 'Berksfile'
@@ -107,6 +100,23 @@ module KitchenHooks
 
       logger.debug "finished cookbook_upload: #{event['after']}"
       return # no error
+    end
+
+
+
+    def kitchen_upload knives
+      logger.info 'Uploading data_bags'
+      with_each_knife_do 'upload data_bags --chef-repo-path .', knives
+
+      logger.info 'Uploading roles'
+      with_each_knife_do 'upload roles --chef-repo-path .', knives
+
+      logger.info 'Uploading environments'
+      Dir['environments/*'].each do |e|
+        knives.each do |k|
+          upload_environment e, k
+        end
+      end
     end
 
 
