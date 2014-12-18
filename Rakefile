@@ -25,7 +25,6 @@ end
 # "rake build"
 require 'rubygems/tasks'
 Gem::Tasks.new({
-  push: false,
   sign: {}
 }) do |tasks|
   tasks.console.command = 'pry'
