@@ -16,15 +16,26 @@ module KitchenHooks
 
     enable :sessions
 
-    include KitchenHooks::Helpers
-
     def self.db! path
       @@db = Daybreak::DB.new path
     end
 
     def self.tmp! dir ; @@tmp = dir end
 
-    def self.close! ; @@db.close end
+    def self.close!
+      @@backlog_worker.kill
+      @@db.close
+    end
+
+    def self.backlog!
+      @@backlog = Queue.new
+      @@backlog_worker = Thread.new do
+        loop do
+          event = @@backlog.shift
+          App.process event
+        end
+      end
+    end
 
     def self.config! config
       @@hipchat = nil
@@ -38,11 +49,17 @@ module KitchenHooks
       end
     end
 
+    get '/backlog' do
+      content_type :json
+      JSON.pretty_generate \
+        backlog: @@backlog.inspect,
+        length: @@backlog.length
+    end
 
     get '/' do
-      process_release
+      App.process_release
       db_entries = {}
-      db.each do |k, v|
+      @@db.each do |k, v|
         db_entries[k] = v unless k =~ /^meta/
       end
       erb :app, locals: {
@@ -63,28 +80,26 @@ module KitchenHooks
     post '/' do
       request.body.rewind
       event = JSON::parse request.body.read rescue nil
-      Thread.new do
-        process event
-      end
+      @@backlog.push event
     end
 
 
 
   private
-    def tmp ; @@tmp ||= '/tmp' end
+    def self.db ; @@db end
 
-    def knives ; @@knives ||= [] end
+    def self.tmp ; @@tmp ||= '/tmp' end
 
-    def db ; @@db end
+    def self.knives ; @@knives ||= [] end
 
-    def hipchat message, color
+    def self.hipchat message, color
       return if @@hipchat.nil?
       @@hipchat[@@hipchat_room].send @@hipchat_nick, message, \
         color: color, notify: false, message_format: 'html'
     end
 
 
-    def notify entry
+    def self.notify entry
       color = case entry[:type]
       when 'failure' ; 'red'
       when 'release' ; 'purple'
@@ -98,7 +113,7 @@ module KitchenHooks
     # error == true  => success
     # error == false => nop
     # otherwise      => failure
-    def mark event, type, error=nil
+    def self.mark event, type, error=nil
       return if error == false
       error = nil if error == true
       entry = { type: type, event: event }
@@ -111,14 +126,14 @@ module KitchenHooks
     end
 
 
-    def process_release version=KitchenHooks::VERSION
+    def self.process_release version=KitchenHooks::VERSION
       return if db['meta_version'] == version
       db.set! 'meta_version', version
       mark version, 'release'
     end
 
 
-    def process event
+    def self.process event
       if event.nil? # JSON parse failed
         mark event, 'failure', 'Could not parse WebHook payload'
         return

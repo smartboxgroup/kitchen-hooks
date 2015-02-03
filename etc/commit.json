@@ -1,21 +1,21 @@
 {
   "before": "08f20548e398f634979047d0c8114260bcc2949a",
-  "after": "7b238ce9c6cff250db5a0b727b9661b618b82e1d",
-  "ref": "refs/tags/bjn_test",
+  "after": "0835e7c74314cfe2aa9f98fe47338031b637ef95",
+  "ref": "refs/tags/v0.0.4",
   "user_id": 645,
   "user_name": "Sean Clemmer",
   "repository": {
-    "name": "realm_logger",
-    "url": "git@git.bluejeansnet.com:chef/realm_logger.git",
+    "name": "realm_catalyst",
+    "url": "git@git.bluejeansnet.com:chef/realm_catalyst.git",
     "description": "",
-    "homepage": "http://git.bluejeansnet.com/chef/realm_logger"
+    "homepage": "http://git.bluejeansnet.com/chef/realm_catalyst"
   },
   "commits": [
     {
-      "id": "7b238ce9c6cff250db5a0b727b9661b618b82e1d",
+      "id": "0835e7c74314cfe2aa9f98fe47338031b637ef95",
       "message": "XYZ",
       "timestamp": "2014-11-25T18:30:57-08:00",
-      "url": "http://git.bluejeansnet.com/chef/realm_logger/commit/7b238ce9c6cff250db5a0b727b9661b618b82e1d",
+      "url": "http://git.bluejeansnet.com/chef/realm_catalyst/commit/7b238ce9c6cff250db5a0b727b9661b618b82e1d",
       "author": {
         "name": "Sean Clemmer",
         "email": "sclemmer@bluejeans.com"

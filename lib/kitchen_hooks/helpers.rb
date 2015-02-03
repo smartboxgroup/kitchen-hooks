@@ -7,33 +7,33 @@ require 'json'
 require 'git'
 require 'ridley'
 require 'berkshelf'
+require 'sinatra/base'
 
 
 Celluloid.logger = nil
 Berkshelf.logger = Logger.new $stdout
 
 module KitchenHooks
-  module Helpers
-
-    def report_error e, msg=nil
+  class App < Sinatra::Application
+    def self.report_error e, msg=nil
       msg = e.message if msg.nil?
-      logger.error msg
-      logger.error e.message
-      logger.error e.backtrace.inspect
+      $stdout.puts msg
+      $stdout.puts e.message
+      $stdout.puts e.backtrace.inspect
       msg
     end
 
 
 
-    def perform_constraint_application event, knives
-      logger.debug 'started perform_constraint_application event=%s, knives=%s' % [
+    def self.perform_constraint_application event, knives
+      $stdout.puts 'started perform_constraint_application event=%s, knives=%s' % [
         event['after'], knives.inspect
       ]
 
       tmp_clone event, :tagged_commit do |clone|
         Dir.chdir clone do
 
-          logger.info 'Applying constraints'
+          $stdout.puts 'Applying constraints'
           constraints = lockfile_constraints 'Berksfile.lock'
           environment = tag_name event
           knives.each do |k|
@@ -44,14 +44,14 @@ module KitchenHooks
         end
       end
 
-      logger.debug "finished perform_constraint_application: #{event['after']}"
+      $stdout.puts "finished perform_constraint_application: #{event['after']}"
       return # no error
     end
 
 
-    def perform_kitchen_upload event, knives
+    def self.perform_kitchen_upload event, knives
       return false unless commit_to_master?(event)
-      logger.debug 'started perform_kitchen_upload event=%s, knives=%s' % [
+      $stdout.puts 'started perform_kitchen_upload event=%s, knives=%s' % [
         event['after'], knives.inspect
       ]
 
@@ -61,13 +61,13 @@ module KitchenHooks
         end
       end
 
-      logger.debug "finished perform_kitchen_upload: #{event['after']}"
+      $stdout.puts "finished perform_kitchen_upload: #{event['after']}"
       return # no error
     end
 
 
-    def perform_cookbook_upload event, knives
-      logger.debug 'started perform_cookbook_upload event=%s, knives=%s' % [
+    def self.perform_cookbook_upload event, knives
+      $stdout.puts 'started perform_cookbook_upload event=%s, knives=%s' % [
         event['after'], knives.inspect
       ]
 
@@ -79,10 +79,10 @@ module KitchenHooks
             raise 'Tagged version does not match cookbook version'
           end
 
-          logger.info 'Uploading cookbook'
+          $stdout.puts 'Uploading cookbook'
           with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
 
-          logger.info 'Uploading bundled roles, environments, and data bags'
+          $stdout.puts 'Uploading bundled roles, environments, and data bags'
           kitchen_upload knives
         end
 
@@ -90,7 +90,7 @@ module KitchenHooks
         berksfile_lock = berksfile + '.lock'
 
         if File::exist? berksfile_lock
-          logger.info 'Uploading dependencies'
+          $stdout.puts 'Uploading dependencies'
           berks_install berksfile
           knives.each do |knife|
             berks_upload berksfile, knife
@@ -98,20 +98,20 @@ module KitchenHooks
         end
       end
 
-      logger.debug "finished cookbook_upload: #{event['after']}"
+      $stdout.puts "finished cookbook_upload: #{event['after']}"
       return # no error
     end
 
 
 
-    def kitchen_upload knives
-      logger.info 'Uploading data_bags'
+    def self.kitchen_upload knives
+      $stdout.puts 'Uploading data_bags'
       with_each_knife_do 'upload data_bags --chef-repo-path .', knives
 
-      logger.info 'Uploading roles'
+      $stdout.puts 'Uploading roles'
       with_each_knife_do 'upload roles --chef-repo-path .', knives
 
-      logger.info 'Uploading environments'
+      $stdout.puts 'Uploading environments'
       Dir['environments/*'].each do |e|
         knives.each do |k|
           upload_environment e, k
@@ -120,7 +120,7 @@ module KitchenHooks
     end
 
 
-    def berkshelf_config knife
+    def self.berkshelf_config knife
       ridley = Ridley::from_chef_config knife
       config = {
         chef: {
@@ -140,15 +140,15 @@ module KitchenHooks
     end
 
 
-    def berks_install berksfile
-      logger.debug 'started berks_install berksfile=%s' % berksfile.inspect
+    def self.berks_install berksfile
+      $stdout.puts 'started berks_install berksfile=%s' % berksfile.inspect
       env_git_dir = ENV.delete 'GIT_DIR'
       env_git_work_tree = ENV.delete 'GIT_WORK_TREE'
 
       cmd = "berks install --debug --berksfile %s" % [
         Shellwords::escape(berksfile)
       ]
-      logger.debug "berks_install: %s" % cmd
+      $stdout.puts "berks_install: %s" % cmd
       system cmd
       raise 'Could not perform berks_install with config %s' % [
         berksfile.inspect
@@ -156,12 +156,12 @@ module KitchenHooks
 
       ENV['GIT_DIR'] = env_git_dir
       ENV['GIT_WORK_TREE'] = env_git_work_tree
-      logger.debug 'finished berks_install: %s' % berksfile
+      $stdout.puts 'finished berks_install: %s' % berksfile
     end
 
 
-    def berks_upload berksfile, knife, options={}
-      logger.debug 'started berks_upload berksfile=%s, knife=%s' % [
+    def self.berks_upload berksfile, knife, options={}
+      $stdout.puts 'started berks_upload berksfile=%s, knife=%s' % [
         berksfile.inspect, knife.inspect
       ]
       config_path = berkshelf_config(knife)
@@ -169,19 +169,19 @@ module KitchenHooks
       cmd = "berks upload --debug --berksfile %s --config %s" % [
         Shellwords::escape(berksfile), Shellwords::escape(config_path)
       ]
-      logger.debug "berks_upload: %s" % cmd
+      $stdout.puts "berks_upload: %s" % cmd
       system cmd
       raise 'Could not perform berks_upload with config %s, knife %s' % [
         berksfile.inspect, knife.inspect
       ] unless $?.exitstatus.zero?
 
       FileUtils.rm_rf config_path
-      logger.debug 'finished berks_upload: %s' % berksfile
+      $stdout.puts 'finished berks_upload: %s' % berksfile
     end
 
 
-    def tmp_clone event, commit_method, &block
-      logger.debug 'starting tmp_clone event=%s, commit_method=%s' % [
+    def self.tmp_clone event, commit_method, &block
+      $stdout.puts 'starting tmp_clone event=%s, commit_method=%s' % [
         event['after'], commit_method.inspect
       ]
 
@@ -193,7 +193,7 @@ module KitchenHooks
 
       commit = self.send(commit_method, event)
 
-      logger.debug 'creating tmp_clone dir=%s, commit=%s' % [
+      $stdout.puts 'creating tmp_clone dir=%s, commit=%s' % [
         dir.inspect, commit.inspect
       ]
 
@@ -202,58 +202,58 @@ module KitchenHooks
       yield dir
 
       FileUtils.rm_rf root
-      logger.debug 'finished tmp_clone'
+      $stdout.puts 'finished tmp_clone'
     end
 
 
-    def with_each_knife_do command, knives
+    def self.with_each_knife_do command, knives
       with_each_knife "knife #{command} --config %{knife}", knives
     end
 
-    def with_each_knife command, knives
+    def self.with_each_knife command, knives
       knives.map do |k|
         cmd = command % { knife: Shellwords::escape(k) }
-        logger.debug 'with_each_knife: %s' % cmd
+        $stdout.puts 'with_each_knife: %s' % cmd
         system cmd
         # No error handling here; do that on "berks upload"
       end
     end
 
 
-    def get_environment environment, knife
+    def self.get_environment environment, knife
       ridley = Ridley::from_chef_config knife
       ridley.environment.find environment
     end
 
 
-    def verify_constraints constraints, environment, knife
-      logger.debug 'started verify_constraints environment=%s, knife=%s' % [
+    def self.verify_constraints constraints, environment, knife
+      $stdout.puts 'started verify_constraints environment=%s, knife=%s' % [
         environment.inspect, knife.inspect
       ]
       chef_environment = get_environment environment, knife
       unless constraints == chef_environment.cookbook_versions
         raise 'Environment did not match constraints'
       end
-      logger.debug 'finished verify_constraints: %s' % environment
+      $stdout.puts 'finished verify_constraints: %s' % environment
     end
 
 
-    def apply_constraints constraints, environment, knife
+    def self.apply_constraints constraints, environment, knife
       # Ripped from Berkshelf::Cli::apply and Berkshelf::Lockfile::apply
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/cli.rb
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/lockfile.rb
-      logger.debug 'started apply_constraints environment=%s, knife=%s' % [
+      $stdout.puts 'started apply_constraints environment=%s, knife=%s' % [
         environment.inspect, knife.inspect
       ]
       chef_environment = get_environment environment, knife
       raise 'Could not find environment "%s"' % environment if chef_environment.nil?
       chef_environment.cookbook_versions = constraints
       chef_environment.save
-      logger.debug 'finished apply_constraints: %s' % environment
+      $stdout.puts 'finished apply_constraints: %s' % environment
     end
 
 
-    def lockfile_constraints lockfile_path
+    def self.lockfile_constraints lockfile_path
       # Ripped from Berkshelf::Cli::apply and Berkshelf::Lockfile::apply
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/cli.rb
       # https://github.com/berkshelf/berkshelf/blob/master/lib/berkshelf/lockfile.rb
@@ -262,13 +262,13 @@ module KitchenHooks
         hash[name] = "= #{dependency.locked_version.to_s}"
         hash
       end
-      logger.debug 'constraints: %s -> %s' % [ lockfile_path, constraints ]
+      $stdout.puts 'constraints: %s -> %s' % [ lockfile_path, constraints ]
       return constraints
     end
 
 
-    def upload_environment environment, knife
-      logger.debug 'started upload_environment environment=%s, knife=%s' % [
+    def self.upload_environment environment, knife
+      $stdout.puts 'started upload_environment environment=%s, knife=%s' % [
         environment.inspect, knife.inspect
       ]
       # Load the local environment from a JSON file
@@ -294,11 +294,13 @@ module KitchenHooks
 
       # Make it so!
       chef_environment.save
-      logger.debug 'finished upload_environment: %s' % environment
+      $stdout.puts 'finished upload_environment: %s' % environment
     end
 
 
-    def notification entry
+    def notification e ; App.notification e end
+
+    def self.notification entry
       return entry[:error] if entry[:error]
       event = entry[:event]
       case entry[:type]
@@ -314,7 +316,9 @@ module KitchenHooks
     end
 
 
-    def generic_details event
+    def generic_details e ; App.generic_details e end
+
+    def self.generic_details event
       return if event.nil?
       %Q|
         <i>#{author(event)}</i> pushed #{push_details(event)}
@@ -322,7 +326,9 @@ module KitchenHooks
     end
 
 
-    def push_details event
+    def push_details e ; App.push_details e end
+
+    def self.push_details event
       return if event.nil?
       %Q|
         <a href="#{gitlab_url(event)}">#{event['after']}</a> to <a href="#{repo_url(event)}">#{repo_name(event)}</a>
@@ -330,84 +336,87 @@ module KitchenHooks
     end
 
 
-    def author event
+    def self.author event
       event['user_name']
     end
 
 
-    def repo_name event
+    def self.repo_name event
       File::basename event['repository']['url'], '.git'
     end
 
 
-    def cookbook_name event
+    def self.cookbook_name event
       repo_name(event).sub /^(app|base|realm|fork)_/, 'bjn_'
     end
 
 
-    def cookbook_repo? event
+    def self.cookbook_repo? event
       repo_name(event) =~ /^(app|base|realm|fork)_/
     end
 
 
-    def repo_url event
+    def self.repo_url event
       git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
     end
 
 
-    def git_daemon_style_url event
+    def self.git_daemon_style_url event
       event['repository']['url'].sub(':', '/').sub('@', '://')
     end
 
 
-    def gitlab_url event
+    def self.gitlab_url event
       url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
       "#{url}/commit/#{event['after']}"
     end
 
 
-    def gitlab_tag_url event
+    def self.gitlab_tag_url event
       url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
       "#{url}/commits/#{tag_name(event)}"
     end
 
 
-    def latest_commit event
+    def self.latest_commit event
       event['commits'].last['id']
     end
 
 
-    def tagged_commit event
+    def self.tagged_commit event
       event['ref'] =~ %r{/tags/(.*)$}
       return $1 # First regex capture
     end
 
-    alias_method :tag_name, :tagged_commit
+
+    def self.tag_name event
+      tagged_commit event
+    end
 
 
-    def commit_to_master? event
+    def self.commit_to_master? event
       event['ref'] == 'refs/heads/master'
     end
 
 
-    def not_deleted? event
+    def self.not_deleted? event
       event['after'] != '0000000000000000000000000000000000000000'
     end
 
 
-    def commit_to_kitchen? event
+    def self.commit_to_kitchen? event
       repo_name(event) == 'kitchen' && not_deleted?(event)
     end
 
 
-    def tagged_commit_to_cookbook? event
+    def self.tagged_commit_to_cookbook? event
       cookbook_repo?(event) &&
       event['ref'] =~ %r{/tags/} &&
       not_deleted?(event)
     end
 
 
-    def tagged_commit_to_realm? event
+    def self.tagged_commit_to_realm? event
       tagged_commit_to_cookbook?(event) &&
       repo_name(event) =~ /^realm_/
     end
