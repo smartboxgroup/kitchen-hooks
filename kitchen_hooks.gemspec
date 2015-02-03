@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency 'hipchat', '~> 1'
   s.add_runtime_dependency 'daybreak', '~> 0.3'
-  s.add_runtime_dependency 'retryable', '~> 1'
+  s.add_runtime_dependency 'retryable', '~> 2'
   s.add_runtime_dependency 'berkshelf', '~> 3'
   s.add_runtime_dependency 'chef', '~> 11.16.4'
   s.add_runtime_dependency 'thor', '~> 0'
