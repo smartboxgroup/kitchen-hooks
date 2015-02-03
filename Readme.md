@@ -1,6 +1,6 @@
-# Hooks
+# Kitchen Hooks ![Version](https://img.shields.io/gem/v/kitchen_hooks.svg?style=flat-square)
 
-[Kitchen Hooks](http://git.bluejeansnet.com/kitchen-hooks) provide a GitLab
+The [Kitchen Hooks](http://git.bluejeansnet.com/kitchen-hooks) provide a GitLab
 WebHoook for automated Chef Server uploads following Kitchen standards.
 
 
