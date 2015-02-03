@@ -1,10 +1,10 @@
 module KitchenHooks
   # General information about the project
   SUMMARY  = %q.GitLab WebHoook for automated Chef Server uploads.
-  AUTHOR   = 'Kelly Wong'
-  EMAIL    = 'kelly@bluejenas.com'
+  AUTHOR   = 'Sean Clemmer'
+  EMAIL    = 'sclemmer@bluejeans.com'
   LICENSE  = 'ISC'
-  HOMEPAGE = 'http://git.ops.bluejeans.com/kitchen-hooks'
+  HOMEPAGE = 'https://github.com/sczizzo/kitchen-hooks'
 
   # Project root
   ROOT = File.dirname(__FILE__), '..', '..'

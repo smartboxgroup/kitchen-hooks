@@ -116,6 +116,10 @@ The `server` command also exposes some options for Sinatra configuration. See
 
 ### Changelog
 
+### 1.6
+
+* Add requests to backlog for serial processing
+
 #### 1.5
 
 * Add release notifications
