@@ -1,15 +1,15 @@
 # Kitchen Hooks ![Version](https://img.shields.io/gem/v/kitchen_hooks.svg?style=flat-square)
 
-The [Kitchen Hooks](http://git.bluejeansnet.com/kitchen-hooks) provide a GitLab
-WebHoook for automated Chef Server uploads following Kitchen standards.
+The Kitchen Hooks provide a GitLab WebHoook for automated Chef Server uploads
+following Kitchen standards.
 
 
 ## What?
 
-So [the Kitchen](http://wiki.bluejeansnet.com/operations/kitchen) is this thing
-we have now in Operations to help guide cookbook development. The [Workflow](http://wiki.bluejeansnet.com/operations/kitchen#workflow)
-sction of the docs prescribes how to go about your day in Chef land including
-how to version, release, and deploy changes to a Chef server.
+So the Kitchen is this thing we have now in Operations at Blue Jeans Network to
+help guide cookbook development. The Workflow sction of the docs prescribes how
+to go about your day in Chef land including how to version, release, and deploy
+changes to a Chef server.
 
 But that's only _one_ Chef server. What if we want redundancy?
 
@@ -59,8 +59,8 @@ The new Hooks cover three scenarios:
    when you want to update an environment with a later version of the realm.
 
 Actions performed by Kitchen Hooks are stored in a [Daybreak](http://propublica.github.io/daybreak/)
-database and presented as a timeline in the [Web UI](http://git.bluejeansnet.com:4567).
-Notifcations can are sent to HipChat.
+database and presented as a timeline in the Web UI. Notifcations may be sent to
+HipChat.
 
 ## Installation
 
@@ -88,6 +88,7 @@ Use the `server` command to start the WebHook receiver:
     Listening on 0.0.0.0:80, CTRL+C to stop
     ...
 
+
 ## Configuration
 
 The configuration file is just JSON. Hopefully it's obvious:
@@ -108,16 +109,19 @@ The configuration file is just JSON. Hopefully it's obvious:
 The `server` command also exposes some options for Sinatra configuration. See
 `kitchen_hooks help server`.
 
+
 ## Development
 
 ### TODO
 
 * Use Ridley for data bag, role, and environment uploads to remove Chef dependency
 
+
 ### Changelog
 
 ### 1.6
 
+* First public release
 * Add requests to backlog for serial processing
 
 #### 1.5
