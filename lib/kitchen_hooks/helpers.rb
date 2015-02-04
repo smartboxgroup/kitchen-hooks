@@ -8,6 +8,7 @@ require 'git'
 require 'ridley'
 require 'berkshelf'
 require 'sinatra/base'
+require 'pmap'
 
 
 Celluloid.logger = nil
@@ -36,7 +37,7 @@ module KitchenHooks
           $stdout.puts 'Applying constraints'
           constraints = lockfile_constraints 'Berksfile.lock'
           environment = tag_name event
-          knives.each do |k|
+          knives.peach do |k|
             apply_constraints constraints, environment, k
             verify_constraints constraints, environment, k
           end
@@ -92,7 +93,7 @@ module KitchenHooks
         if File::exist? berksfile_lock
           $stdout.puts 'Uploading dependencies'
           berks_install berksfile
-          knives.each do |knife|
+          knives.peach do |knife|
             berks_upload berksfile, knife
           end
         end
@@ -112,8 +113,8 @@ module KitchenHooks
       with_each_knife_do 'upload roles --chef-repo-path .', knives
 
       $stdout.puts 'Uploading environments'
-      Dir['environments/*'].each do |e|
-        knives.each do |k|
+      Dir['environments/*'].peach do |e|
+        knives.peach do |k|
           upload_environment e, k
         end
       end
@@ -211,7 +212,7 @@ module KitchenHooks
     end
 
     def self.with_each_knife command, knives
-      knives.map do |k|
+      knives.pmap do |k|
         cmd = command % { knife: Shellwords::escape(k) }
         $stdout.puts 'with_each_knife: %s' % cmd
         system cmd
