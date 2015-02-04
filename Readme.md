@@ -122,6 +122,7 @@ The `server` command also exposes some options for Sinatra configuration. See
 ### 1.6
 
 * First public release
+* Parallelize most operations
 * Add requests to backlog for serial processing
 
 #### 1.5
