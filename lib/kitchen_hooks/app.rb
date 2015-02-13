@@ -9,6 +9,8 @@ require 'sinatra/base'
 require_relative 'helpers'
 require_relative 'metadata'
 
+Thread.abort_on_exception = true
+
 
 module KitchenHooks
   class App < Sinatra::Application
@@ -23,6 +25,7 @@ module KitchenHooks
     def self.tmp! dir ; @@tmp = dir end
 
     def self.close!
+      @@sync_worker.kill
       @@backlog_worker.kill
       @@db.close
     end
@@ -37,7 +40,18 @@ module KitchenHooks
       end
     end
 
+    def self.sync!
+      @@sync_worker = Thread.new do
+        loop do
+          process_sync
+          sleep @@sync_interval
+        end
+      end
+    end
+
+
     def self.config! config
+      @@config = config
       @@hipchat = nil
       if config['hipchat']
         @@hipchat = HipChat::Client.new config['hipchat']['token']
@@ -47,6 +61,7 @@ module KitchenHooks
       @@knives = config['knives'].map do |_, knife|
         Pathname.new(knife).expand_path.realpath.to_s
       end
+      @@sync_interval = config.fetch 'sync_interval', 3600 # Hourly
     end
 
     get '/backlog' do
@@ -103,6 +118,7 @@ module KitchenHooks
       color = case entry[:type]
       when 'failure' ; 'red'
       when 'release' ; 'purple'
+      when 'unsynced' ; 'yellow'
       else ; 'green'
       end
       hipchat notification(entry), color
@@ -130,6 +146,20 @@ module KitchenHooks
       return if db['meta_version'] == version
       db.set! 'meta_version', version
       mark version, 'release'
+    end
+
+
+    def self.process_sync
+      sync = sync_servers(knives).status
+
+      if sync.nil?
+        mark "Couldn't sync Chef servers (unknown issue)", 'unsynced'
+        return
+      end
+
+      sync_tag = sync[:num_failures].zero? ? 'synced' : 'unsynced'
+
+      mark sync, sync_tag
     end
 
 

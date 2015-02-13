@@ -10,6 +10,10 @@ body {
   background: #d9534f;
 }
 
+.unsynced .cd-timeline-img {
+  background: #f0ad4e;
+}
+
 .release .cd-timeline-img {
   background: #5bc0de;
 }

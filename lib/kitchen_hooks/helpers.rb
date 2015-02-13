@@ -10,12 +10,43 @@ require 'berkshelf'
 require 'sinatra/base'
 require 'pmap'
 
+require_relative 'helpers/sync_servers'
 
 Celluloid.logger = nil
 Berkshelf.logger = Logger.new $stdout
 
+
+
 module KitchenHooks
   class App < Sinatra::Application
+
+    def self.pluralize n, singular, plural=nil
+      plural = "#{singular}s" if plural.nil?
+      return "no #{plural}" if n.zero?
+      return "1 #{singular}" if n == 1
+      "#{n} #{plural}"
+    end
+
+    # http://stackoverflow.com/questions/4136248/how-to-generate-a-human-readable-time-range-using-ruby-on-rails
+    def self.humanize_seconds secs
+      [
+        [ 60, :seconds ],
+        [ 60, :minutes ],
+        [ 24, :hours ],
+        [ 1000, :days ]
+      ].map { |count, name|
+        if secs > 0
+          secs, n = secs.divmod(count)
+          "#{n.to_i} #{name}"
+        end
+      }.compact.reverse.join(' ')
+    end
+
+    def self.sync_servers knives
+      SyncServers.new knives
+    end
+
+
     def self.report_error e, msg=nil
       msg = e.message if msg.nil?
       $stdout.puts msg
@@ -304,7 +335,19 @@ module KitchenHooks
     def self.notification entry
       return entry[:error] if entry[:error]
       event = entry[:event]
+
       case entry[:type]
+      when 'synced', 'unsynced'
+        if event.is_a? String
+          event
+        else
+          'Synced <b>%d</b> of <b>%d</b> nodes (%s, %s elapsed)' % [
+            event[:num_successes],
+            event[:num_nodes],
+            pluralize(event[:num_failures], 'failure'),
+            humanize_seconds(event[:elapsed])
+          ]
+        end
       when 'kitchen upload'
         %Q| <i>#{author(event)}</i> updated <a href="#{gitlab_url(event)}">the Kitchen</a> |
       when 'cookbook upload'

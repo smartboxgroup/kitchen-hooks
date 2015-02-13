@@ -1,6 +1,7 @@
 {
   "hipchat": null,
   "knives": {
-    "user": "~/.chef/knife.rb"
+    "bng11": "~/.chef/bng11.rb",
+    "dc1": "~/.chef/dc1.rb"
   }
 }

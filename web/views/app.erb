@@ -16,6 +16,10 @@
           <img src="/vendor/img/error.svg" alt="Error">
         <% when 'release' %>
           <img src="/vendor/img/cube.svg" alt="Cube">
+        <% when 'synced' %>
+          <img src="/vendor/img/sync.svg" alt="Sync">
+        <% when 'unsynced' %>
+          <img src="/vendor/img/sync.svg" alt="Sync">
         <% end %>
       </div>
       <div class="cd-timeline-content">
@@ -25,6 +29,10 @@
         <% elsif entry[:error] # Failed before event generated %>
           <p><%= notification entry %></p>
         <% elsif type == 'release' %>
+          <p><%= notification entry %></p>
+        <% elsif type == 'synced' %>
+          <p><%= notification entry %></p>
+        <% elsif type == 'unsynced' %>
           <p><%= notification entry %></p>
         <% else %>
           <p><%= notification entry %> by pushing <%= push_details(entry[:event]) %></p>

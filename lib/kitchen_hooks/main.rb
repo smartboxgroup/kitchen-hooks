@@ -61,10 +61,11 @@ module KitchenHooks
       desc: 'Location of temporary directory',
       default: '/tmp'
     def server
+      App.config! JSON::parse(File.read(options.config))
       App.backlog!
       App.db! options.database
       App.tmp! options.tmpdir
-      App.config! JSON::parse(File.read(options.config))
+      App.sync!
       App.set :environment, options.environment
       App.set :port, options.port
       App.set :bind, options.bind
