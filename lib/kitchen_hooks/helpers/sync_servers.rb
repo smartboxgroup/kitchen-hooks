@@ -15,6 +15,7 @@ class SyncServers
   end
 
 
+
 private
 
   def ridleys
@@ -23,20 +24,36 @@ private
     end
   end
 
+
   def all_nodes
     @clients ||= {}
-    @all_nodes ||= ridleys.flat_map do |ridley|
-      clients = ridley.client.all
-      nodes = ridley.partial_search(:node, '*:*', %w[ ohai_time ])
+    bad_ridleys = []
 
-      nodes.each do |n|
-        c = clients.select { |c| c.name == n.name }.shift
-        @clients[n.name] = c unless c.nil?
+    @all_nodes ||= ridleys.each_with_index.pmap(4) do |ridley, i|
+      clients = ridley.client.all
+
+      begin
+        nodes = ridley.partial_search(:node, '*:*', %w[ ohai_time ])
+      rescue
+        puts 'WARNING: No partial search, skipping knife'
+        bad_ridleys << i
+        nodes = []
       end
 
-      nodes
+      nodes.map do |n|
+        c = clients.select { |c| c.name == n.name }.shift
+        @clients[n.name] = c unless c.nil?
+        n
+      end
+    end.flatten
+
+    bad_ridleys.sort.reverse.each do |idx|
+      @ridleys.delete_at idx
     end
+
+    return @all_nodes
   end
+
 
   def merged_nodes
     @merged_nodes ||= all_nodes.group_by(&:name).pmap do |_, copies|
@@ -49,7 +66,7 @@ private
     nodes = merged_nodes
     failures = Set.new
 
-    nodes.peach(16) do |n|
+    nodes.peach(8) do |n|
       n.reload
 
       ridleys.peach(4) do |ridley|
@@ -65,8 +82,9 @@ private
       end
 
       puts 'Synced node "%s"' % n.name
-    end
+    end unless @ridleys.length == 1
 
+    puts 'Sync completed'
     return {
       failures: failures,
       num_successes: nodes.length - failures.length,

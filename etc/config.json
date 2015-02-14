@@ -2,6 +2,7 @@
   "hipchat": null,
   "knives": {
     "bng11": "~/.chef/bng11.rb",
+    "bng": "~/.chef/bng.rb",
     "dc1": "~/.chef/dc1.rb"
   }
 }
