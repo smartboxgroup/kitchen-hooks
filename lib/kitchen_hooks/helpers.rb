@@ -180,11 +180,14 @@ module KitchenHooks
       cmd = "berks install --debug --berksfile %s" % [
         Shellwords::escape(berksfile)
       ]
-      $stdout.puts "berks_install: %s" % cmd
-      system cmd
-      raise 'Could not perform berks_install with config %s' % [
-        berksfile.inspect
-      ] unless $?.exitstatus.zero?
+      begin
+        $stdout.puts "berks_install: %s" % cmd
+        system cmd
+      rescue
+        raise 'Could not perform berks_install with config %s' % [
+          berksfile.inspect
+        ]
+      end
 
       ENV['GIT_DIR'] = env_git_dir
       ENV['GIT_WORK_TREE'] = env_git_work_tree
@@ -201,11 +204,15 @@ module KitchenHooks
       cmd = "berks upload --debug --berksfile %s --config %s" % [
         Shellwords::escape(berksfile), Shellwords::escape(config_path)
       ]
-      $stdout.puts "berks_upload: %s" % cmd
-      system cmd
-      raise 'Could not perform berks_upload with config %s, knife %s' % [
-        berksfile.inspect, knife.inspect
-      ] unless $?.exitstatus.zero?
+
+      begin
+        $stdout.puts "berks_upload: %s" % cmd
+        system cmd
+      rescue
+        raise 'Could not perform berks_upload with config %s, knife %s' % [
+          berksfile.inspect, knife.inspect
+        ]
+      end
 
       FileUtils.rm_rf config_path
       $stdout.puts 'finished berks_upload: %s' % berksfile
