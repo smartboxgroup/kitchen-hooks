@@ -43,8 +43,8 @@ module KitchenHooks
     def self.sync!
       @@sync_worker = Thread.new do
         loop do
-          process_sync
           sleep @@sync_interval
+          process_sync
         end
       end
     end

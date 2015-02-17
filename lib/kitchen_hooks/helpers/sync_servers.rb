@@ -57,7 +57,10 @@ private
 
   def merged_nodes
     @merged_nodes ||= all_nodes.group_by(&:name).pmap do |_, copies|
-      copies.sort_by { |c| c.automatic.ohai_time }.last
+      copies.sort_by do |c|
+        time = c.automatic.ohai_time
+        time.is_a?(Float) ? time : -1.0
+      end.last
     end
   end
 
