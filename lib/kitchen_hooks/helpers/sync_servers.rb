@@ -6,14 +6,18 @@ require 'set'
 class SyncServers
   attr_reader :status
 
-
-  def initialize knives
+  def initialize knives, cached_nodes={}
     @knives  = knives
     @started = Time.now
-    @status  = sync_servers.merge \
+    @cached_nodes = Hash.new { |h,k| h[k] = 0.0 }
+    @cached_nodes.merge! cached_nodes
+    @status = sync_servers.merge \
       elapsed: Time.now - @started rescue nil
   end
 
+  def cached_nodes
+    Hash[@cached_nodes]
+  end
 
 
 private
@@ -25,11 +29,11 @@ private
   end
 
 
-  def all_nodes
-    @clients ||= {}
+  def search_nodes
+    @clients = {}
     bad_ridleys = []
 
-    @all_nodes ||= ridleys.each_with_index.pmap(4) do |ridley, i|
+    @search_nodes ||= ridleys.each_with_index.pmap(4) do |ridley, i|
       clients = ridley.client.all
 
       begin
@@ -51,25 +55,33 @@ private
       @ridleys.delete_at idx
     end
 
-    return @all_nodes
+    return @search_nodes
   end
 
 
-  def merged_nodes
-    @merged_nodes ||= all_nodes.group_by(&:name).pmap do |_, copies|
+  def updated_and_deleted_nodes
+    @all_nodes ||= search_nodes.group_by(&:name).pmap do |name, copies|
       copies.sort_by do |c|
         time = c.automatic.ohai_time
         time.is_a?(Float) ? time : -1.0
       end.last
     end
+
+    @updated_nodes ||= @all_nodes.select do |n|
+      n.automatic.ohai_time.to_f > @cached_nodes[n.name]
+    end
+
+    @deleted_nodes ||= @cached_nodes.keys - @all_nodes.map(&:name)
+
+    return @updated_nodes, @deleted_nodes
   end
 
 
   def sync_servers
-    nodes = merged_nodes
+    nodes, deleted = updated_and_deleted_nodes
     failures = Set.new
 
-    nodes.peach(8) do |n|
+    nodes.shuffle.peach(8) do |n|
       n.reload
 
       ridleys.peach(4) do |ridley|
@@ -84,18 +96,40 @@ private
         rescue puts('WARNING: Client sync failed for node "%s"' % n.name)
       end
 
-      puts 'Synced node "%s"' % n.name
+      if failures.include? n.name
+        puts 'ERROR: Node sync failed for node "%s"' % n.name
+      else
+        puts 'Synced node "%s"' % n.name
+      end
     end unless @ridleys.length == 1
+
+    successes = []
+    nodes.each do |n|
+      next if failures.include? n.name
+      @cached_nodes[n.name] = n.automatic.ohai_time.to_f
+      successes << n
+    end
+
+    deleted.each do |n|
+      puts 'Deleting node "%s"' % n
+      ridleys.peach(4) do |ridley|
+        ridley.node.delete n rescue \
+          puts('WARNING: Could not delete node "%s"' % n)
+      end
+    end
 
     puts 'Sync completed'
     return {
+      deleted: deleted,
       failures: failures,
+      successes: successes,
       num_successes: nodes.length - failures.length,
       num_failures: failures.length,
+      num_deletions: deleted.length,
       num_nodes: nodes.length
     }
-  rescue
-    return nil
+  # rescue
+  #   return nil
   end
 
 end

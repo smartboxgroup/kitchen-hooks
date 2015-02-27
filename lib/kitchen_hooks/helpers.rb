@@ -42,10 +42,6 @@ module KitchenHooks
       }.compact.reverse.join(' ')
     end
 
-    def self.sync_servers knives
-      SyncServers.new knives
-    end
-
 
     def self.report_error e, msg=nil
       msg = e.message if msg.nil?

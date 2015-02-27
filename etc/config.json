@@ -1,4 +1,5 @@
 {
+  "sync_interval": 30,
   "hipchat": null,
   "knives": {
     "bng11": "~/.chef/bng11.rb",

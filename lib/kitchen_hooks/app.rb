@@ -43,8 +43,8 @@ module KitchenHooks
     def self.sync!
       @@sync_worker = Thread.new do
         loop do
-          sleep @@sync_interval
           process_sync
+          sleep @@sync_interval
         end
       end
     end
@@ -144,13 +144,21 @@ module KitchenHooks
 
     def self.process_release version=KitchenHooks::VERSION
       return if db['meta_version'] == version
-      db.set! 'meta_version', version
+      db.lock do
+        db.set! 'meta_version', version
+      end
       mark version, 'release'
     end
 
 
     def self.process_sync
-      sync = sync_servers(knives).status
+      cached_nodes = db['meta_cached_nodes']
+      cached_nodes ||= {}
+      sync_servers = SyncServers.new knives, cached_nodes
+      db.lock do
+        db.set! 'meta_cached_nodes', sync_servers.cached_nodes
+      end
+      sync = sync_servers.status
 
       if sync.nil?
         mark "Couldn't sync Chef servers (unknown issue)", 'unsynced'
@@ -158,7 +166,6 @@ module KitchenHooks
       end
 
       sync_tag = sync[:num_failures].zero? ? 'synced' : 'unsynced'
-
       mark sync, sync_tag
     end
 
