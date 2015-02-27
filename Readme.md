@@ -122,6 +122,7 @@ The `server` command also exposes some options for Sinatra configuration. See
 ### 1.7
 
 * Sync nodes between Chef servers
+* Speedup sync by cachine Ohai update times
 
 ### 1.6
 

@@ -18,7 +18,12 @@ module KitchenHooks
 
     enable :sessions
 
-    def self.db! path
+    def self.db! path=@@db_path
+      if defined? @@db
+        @@db.flush
+        @@db.close
+      end
+      @@db_path = path
       @@db = Daybreak::DB.new path
     end
 
@@ -27,6 +32,7 @@ module KitchenHooks
     def self.close!
       @@sync_worker.kill
       @@backlog_worker.kill
+      @@db.flush
       @@db.close
     end
 
@@ -134,7 +140,7 @@ module KitchenHooks
       error = nil if error == true
       entry = { type: type, event: event }
       entry.merge!(error: error, type: 'failure') if error
-      db.synchronize do
+      db.lock do
         db[Time.now.to_f] = entry
       end
       db.flush
@@ -159,14 +165,11 @@ module KitchenHooks
         db.set! 'meta_cached_nodes', sync_servers.cached_nodes
       end
       sync = sync_servers.status
-
-      if sync.nil?
-        mark "Couldn't sync Chef servers (unknown issue)", 'unsynced'
-        return
-      end
-
+      puts 'Sync completed'
+      db!
       sync_tag = sync[:num_failures].zero? ? 'synced' : 'unsynced'
       mark sync, sync_tag
+      db!
     end
 
 

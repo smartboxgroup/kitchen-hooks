@@ -344,10 +344,13 @@ module KitchenHooks
         if event.is_a? String
           event
         else
-          'Synced <b>%d</b> of <b>%d</b> nodes (%s, %s elapsed)' % [
+          num_deletions = event[:num_deletions].to_i
+          deletions = '%s, ' % pluralize(num_deletions, 'deletion')
+          deletions = '' unless num_deletions > 0
+          'Synced <b>%d</b> of <b>%d</b> nodes (%s%s elapsed)' % [
             event[:num_successes],
             event[:num_nodes],
-            pluralize(event[:num_failures], 'failure'),
+            deletions,
             humanize_seconds(event[:elapsed])
           ]
         end

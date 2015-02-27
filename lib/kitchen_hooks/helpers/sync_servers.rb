@@ -107,7 +107,7 @@ private
     nodes.each do |n|
       next if failures.include? n.name
       @cached_nodes[n.name] = n.automatic.ohai_time.to_f
-      successes << n
+      successes << n.name
     end
 
     deleted.each do |n|
@@ -118,18 +118,15 @@ private
       end
     end
 
-    puts 'Sync completed'
     return {
       deleted: deleted,
       failures: failures,
       successes: successes,
-      num_successes: nodes.length - failures.length,
+      num_successes: successes.length,
       num_failures: failures.length,
       num_deletions: deleted.length,
       num_nodes: nodes.length
     }
-  # rescue
-  #   return nil
   end
 
 end
