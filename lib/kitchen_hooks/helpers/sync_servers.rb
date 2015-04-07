@@ -110,6 +110,8 @@ private
       successes << n.name
     end
 
+    deleted = [] # Don't delete node objects
+
     deleted.each do |n|
       puts 'Deleting node "%s"' % n
       ridleys.peach(4) do |ridley|
