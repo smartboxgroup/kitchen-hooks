@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'pmap', '~> 1'
   s.add_runtime_dependency 'chef', '>= 11'
   s.add_runtime_dependency 'eventmachine', '= 1.0.4'
+  s.add_runtime_dependency 'thin', '= 1.6.3'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- test/*`.split("\n")
