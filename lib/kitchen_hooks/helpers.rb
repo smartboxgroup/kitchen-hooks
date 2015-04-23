@@ -330,6 +330,8 @@ module KitchenHooks
       # Make it so!
       chef_environment.save
       $stdout.puts 'finished upload_environment: %s' % environment
+    rescue
+      raise 'Could not upload environment, check your syntax'
     end
 
 

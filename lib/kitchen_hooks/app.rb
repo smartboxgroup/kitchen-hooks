@@ -9,7 +9,6 @@ require 'sinatra/base'
 require_relative 'helpers'
 require_relative 'metadata'
 
-Thread.abort_on_exception = true
 
 
 module KitchenHooks
