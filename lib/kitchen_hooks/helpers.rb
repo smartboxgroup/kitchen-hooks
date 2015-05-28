@@ -109,13 +109,9 @@ module KitchenHooks
         berksfile = File::join clone, 'Berksfile'
         berksfile_lock = "#{berksfile}.lock"
 
-        # If no lockfile provided, use latest dependencies
-        do_update = !File::exist?(berksfile_lock)
-
         $stdout.puts 'Uploading dependencies'
+        berks_install berksfile
         knives.peach do |knife|
-          berks_install berksfile, knife
-          # berks_update berksfile, knife if do_update
           berks_upload berksfile, knife
         end
 
@@ -240,6 +236,7 @@ module KitchenHooks
       begin
         $stdout.puts "berks_upload: %s" % cmd
         system cmd
+        raise unless $?.exitstatus.zero?
       rescue
         raise 'Could not perform berks_upload with config %s, knife %s' % [
           berksfile.inspect, knife.inspect

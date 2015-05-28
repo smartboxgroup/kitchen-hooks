@@ -29,7 +29,7 @@ module KitchenHooks
     def self.tmp! dir ; @@tmp = dir end
 
     def self.close!
-      @@sync_worker.kill
+      @@sync_worker.kill if defined? @@sync_worker
       @@backlog_worker.kill
       @@db.flush
       @@db.close
@@ -49,14 +49,15 @@ module KitchenHooks
       return if @@sync_interval.nil?
       @@sync_worker = Thread.new do
         loop do
-          process_sync
           sleep @@sync_interval
+          process_sync
         end
       end
     end
 
 
     def self.config! config
+      $stderr.puts 'ENV: %s' % JSON::pretty_generate(ENV.to_hash)
       @@config = config
       @@hipchat = nil
       if config['hipchat']
@@ -144,6 +145,9 @@ module KitchenHooks
         db[Time.now.to_f] = entry
       end
       db.flush
+      $stderr.puts 'MARK "%s": event=%s error=%s' % [
+        type, event.inspect, error.inspect
+      ]
       notify entry
     end
 
