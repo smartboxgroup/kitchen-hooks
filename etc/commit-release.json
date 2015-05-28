@@ -1,21 +1,21 @@
 {
   "before": "52398401e005ec9003e932571147366cdaa3ce4b",
   "after": "52398401e005ec9003e932571147366cdaa3ce4b",
-  "ref": "refs/tags/v0.10.1",
+  "ref": "refs/tags/v0.2.5",
   "user_id": 645,
   "user_name": "Sean Clemmer",
   "repository": {
-    "name": "realm_bitcouncil",
-    "url": "git@git.bluejeansnet.com:chef/realm_bitcouncil.git",
+    "name": "app_cassandra_dse",
+    "url": "git@git.bluejeansnet.com:chef/app_cassandra_dse.git",
     "description": "",
-    "homepage": "http://git.bluejeansnet.com/chef/realm_bitcouncil"
+    "homepage": "http://git.bluejeansnet.com/chef/app_cassandra_dse"
   },
   "commits": [
     {
       "id": "52398401e005ec9003e932571147366cdaa3ce4b",
       "message": "XYZ",
       "timestamp": "2014-11-25T18:30:57-08:00",
-      "url": "http://git.bluejeansnet.com/chef/realm_bitcouncil/commit/52398401e005ec9003e932571147366cdaa3ce4b",
+      "url": "http://git.bluejeansnet.com/chef/app_cassandra_dse/commit/bbdfcc13233ca0173c75896155c8013e08fa81e6",
       "author": {
         "name": "Sean Clemmer",
         "email": "sclemmer@bluejeans.com"

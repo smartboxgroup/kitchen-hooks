@@ -100,29 +100,25 @@ module KitchenHooks
       ]
 
       tmp_clone event, :tagged_commit do |clone|
-        Dir.chdir clone do
-          tagged_version = tag_name(event).delete('v')
-          cookbook_version = File.read('VERSION').strip
-          unless tagged_version == cookbook_version
-            raise 'Tagged version does not match cookbook version'
-          end
+        tagged_version = tag_name(event).delete('v')
+        cookbook_version = File.read(File.join(clone, 'VERSION')).strip
+        unless tagged_version == cookbook_version
+          raise 'Tagged version does not match cookbook version'
+        end
 
+        berksfile = File::join clone, 'Berksfile'
+        $stdout.puts 'Uploading dependencies'
+        berks_install berksfile
+        knives.peach do |knife|
+          berks_upload berksfile, knife
+        end
+
+        Dir.chdir clone do
           $stdout.puts 'Uploading cookbook'
           with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
 
           $stdout.puts 'Uploading bundled roles, environments, and data bags'
           kitchen_upload knives
-        end
-
-        berksfile = File::join clone, 'Berksfile'
-        berksfile_lock = berksfile + '.lock'
-
-        if File::exist? berksfile_lock
-          $stdout.puts 'Uploading dependencies'
-          berks_install berksfile
-          knives.peach do |knife|
-            berks_upload berksfile, knife
-          end
         end
       end
 
@@ -179,6 +175,7 @@ module KitchenHooks
       begin
         $stdout.puts "berks_install: %s" % cmd
         system cmd
+        raise unless $?.exitstatus.zero?
       rescue
         raise 'Could not perform berks_install with config %s' % [
           berksfile.inspect
@@ -204,6 +201,7 @@ module KitchenHooks
       begin
         $stdout.puts "berks_upload: %s" % cmd
         system cmd
+        raise unless $?.exitstatus.zero?
       rescue
         raise 'Could not perform berks_upload with config %s, knife %s' % [
           berksfile.inspect, knife.inspect
