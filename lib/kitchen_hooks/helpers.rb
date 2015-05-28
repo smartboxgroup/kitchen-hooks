@@ -240,7 +240,6 @@ module KitchenHooks
       begin
         $stdout.puts "berks_upload: %s" % cmd
         system cmd
-        raise unless $?.exitstatus.zero?
       rescue
         raise 'Could not perform berks_upload with config %s, knife %s' % [
           berksfile.inspect, knife.inspect
