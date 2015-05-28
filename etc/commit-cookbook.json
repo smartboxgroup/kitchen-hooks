@@ -1,0 +1,17 @@
+{
+  "before": "0000000000000000000000000000000000000000",
+  "after": "34c97335f185916293d5cd3fc41fb5fc0b9535d1",
+  "ref": "refs/tags/v0.2.13",
+  "user_id": 645,
+  "user_name": "Sean Clemmer",
+  "repository": {
+    "name": "app_graphite",
+    "url": "git@git.bluejeansnet.com:chef/app_graphite.git",
+    "description": "",
+    "homepage": "http://git.bluejeansnet.com/chef/app_graphite"
+  },
+  "commits": [
+
+  ],
+  "total_commits_count": 0
+}
