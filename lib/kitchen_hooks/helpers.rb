@@ -110,6 +110,7 @@ module KitchenHooks
         berksfile_lock = "#{berksfile}.lock"
 
         $stdout.puts 'Uploading dependencies'
+        FileUtils.rm_rf File.join(ENV['HOME'], '.berkshelf')
         berks_install berksfile
         knives.peach do |knife|
           berks_upload berksfile, knife
