@@ -145,9 +145,13 @@ module KitchenHooks
         db[Time.now.to_f] = entry
       end
       db.flush
+      $stderr.puts '*********************************************'
+      $stderr.puts '#############################################'
       $stderr.puts 'MARK "%s": event=%s error=%s' % [
         type, event.inspect, error.inspect
       ]
+      $stderr.puts '#############################################'
+      $stderr.puts '*********************************************'
       notify entry
     end
 
