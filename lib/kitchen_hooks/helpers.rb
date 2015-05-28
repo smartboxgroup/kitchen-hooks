@@ -132,16 +132,22 @@ module KitchenHooks
 
 
     def self.kitchen_upload knives
-      $stdout.puts 'Uploading data_bags'
-      with_each_knife_do 'upload data_bags --chef-repo-path .', knives
+      if Dir.exist? 'data_bags'
+        $stdout.puts 'Uploading data_bags'
+        with_each_knife_do 'upload data_bags --chef-repo-path .', knives
+      end
 
-      $stdout.puts 'Uploading roles'
-      with_each_knife_do 'upload roles --chef-repo-path .', knives
+      if Dir.exist? 'roles'
+        $stdout.puts 'Uploading roles'
+        with_each_knife_do 'upload roles --chef-repo-path .', knives
+      end
 
-      $stdout.puts 'Uploading environments'
-      Dir['environments/*'].peach do |e|
-        knives.peach do |k|
-          upload_environment e, k
+      if Dir.exist? 'environments'
+        $stdout.puts 'Uploading environments'
+        Dir['environments/*'].peach do |e|
+          knives.peach do |k|
+            upload_environment e, k
+          end
         end
       end
     end
