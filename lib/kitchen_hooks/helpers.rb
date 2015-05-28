@@ -107,8 +107,14 @@ module KitchenHooks
         end
 
         berksfile = File::join clone, 'Berksfile'
+        berksfile_lock = "#{berksfile}.lock"
+
+        # If no lockfile provided, use latest dependencies
+        do_update = !File::exist?(berksfile_lock)
+
         $stdout.puts 'Uploading dependencies'
         berks_install berksfile
+        berks_update berksfile if do_update
         knives.peach do |knife|
           berks_upload berksfile, knife
         end
@@ -161,6 +167,30 @@ module KitchenHooks
         f.puts JSON::pretty_generate config
       end
       return config_path
+    end
+
+
+    def self.berks_update berksfile
+      $stdout.puts 'started berks_update berksfile=%s' % berksfile.inspect
+      env_git_dir = ENV.delete 'GIT_DIR'
+      env_git_work_tree = ENV.delete 'GIT_WORK_TREE'
+
+      cmd = "berks update --debug --berksfile %s" % [
+        Shellwords::escape(berksfile)
+      ]
+      begin
+        $stdout.puts "berks_update: %s" % cmd
+        system cmd
+        raise unless $?.exitstatus.zero?
+      rescue
+        raise 'Could not perform berks_update with config %s' % [
+          berksfile.inspect
+        ]
+      end
+
+      ENV['GIT_DIR'] = env_git_dir
+      ENV['GIT_WORK_TREE'] = env_git_work_tree
+      $stdout.puts 'finished berks_update: %s' % berksfile
     end
 
 

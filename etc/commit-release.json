@@ -1,21 +1,21 @@
 {
-  "before": "52398401e005ec9003e932571147366cdaa3ce4b",
-  "after": "52398401e005ec9003e932571147366cdaa3ce4b",
-  "ref": "refs/tags/v0.2.5",
+  "before": "fd4777414aeb61315d292936687d5a87e7d62ded",
+  "after": "fd4777414aeb61315d292936687d5a87e7d62ded",
+  "ref": "refs/tags/v0.2.6",
   "user_id": 645,
   "user_name": "Sean Clemmer",
   "repository": {
-    "name": "app_cassandra_dse",
-    "url": "git@git.bluejeansnet.com:chef/app_cassandra_dse.git",
+    "name": "app_graphite",
+    "url": "git@git.bluejeansnet.com:chef/app_graphite.git",
     "description": "",
-    "homepage": "http://git.bluejeansnet.com/chef/app_cassandra_dse"
+    "homepage": "http://git.bluejeansnet.com/chef/app_graphite"
   },
   "commits": [
     {
-      "id": "52398401e005ec9003e932571147366cdaa3ce4b",
+      "id": "fd4777414aeb61315d292936687d5a87e7d62ded",
       "message": "XYZ",
       "timestamp": "2014-11-25T18:30:57-08:00",
-      "url": "http://git.bluejeansnet.com/chef/app_cassandra_dse/commit/bbdfcc13233ca0173c75896155c8013e08fa81e6",
+      "url": "http://git.bluejeansnet.com/chef/app_graphite/commit/fd4777414aeb61315d292936687d5a87e7d62ded",
       "author": {
         "name": "Sean Clemmer",
         "email": "sclemmer@bluejeans.com"

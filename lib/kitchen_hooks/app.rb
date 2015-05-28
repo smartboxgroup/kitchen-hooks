@@ -46,6 +46,7 @@ module KitchenHooks
     end
 
     def self.sync!
+      return if @@sync_interval.nil?
       @@sync_worker = Thread.new do
         loop do
           process_sync
@@ -66,7 +67,7 @@ module KitchenHooks
       @@knives = config['knives'].map do |_, knife|
         Pathname.new(knife).expand_path.realpath.to_s
       end
-      @@sync_interval = config.fetch 'sync_interval', 3600 # Hourly
+      @@sync_interval = config['sync_interval']
     end
 
     get '/backlog' do
