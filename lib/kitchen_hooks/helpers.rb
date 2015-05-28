@@ -113,9 +113,9 @@ module KitchenHooks
         do_update = !File::exist?(berksfile_lock)
 
         $stdout.puts 'Uploading dependencies'
-        berks_install berksfile
-        berks_update berksfile if do_update
         knives.peach do |knife|
+          berks_install berksfile, knife
+          # berks_update berksfile, knife if do_update
           berks_upload berksfile, knife
         end
 
@@ -162,21 +162,26 @@ module KitchenHooks
           verify: false
         }
       }
+      $stdout.puts 'Berkshelf config: %s' % JSON::pretty_generate(config)
       config_path = File.join tmp, "#{SecureRandom.hex}-berkshelf.json"
       File.open(config_path, 'w') do |f|
-        f.puts JSON::pretty_generate config
+        f.puts JSON::generate(config)
       end
       return config_path
     end
 
 
-    def self.berks_update berksfile
+    def self.berks_update berksfile, knife=nil
       $stdout.puts 'started berks_update berksfile=%s' % berksfile.inspect
       env_git_dir = ENV.delete 'GIT_DIR'
       env_git_work_tree = ENV.delete 'GIT_WORK_TREE'
 
-      cmd = "berks update --debug --berksfile %s" % [
-        Shellwords::escape(berksfile)
+      knife_args = if knife
+        '--config %s' % Shellwords::escape(berkshelf_config knife)
+      end
+
+      cmd = "berks update --debug --berksfile %s %s" % [
+        Shellwords::escape(berksfile), knife_args
       ]
       begin
         $stdout.puts "berks_update: %s" % cmd
@@ -194,13 +199,17 @@ module KitchenHooks
     end
 
 
-    def self.berks_install berksfile
+    def self.berks_install berksfile, knife=nil
       $stdout.puts 'started berks_install berksfile=%s' % berksfile.inspect
       env_git_dir = ENV.delete 'GIT_DIR'
       env_git_work_tree = ENV.delete 'GIT_WORK_TREE'
 
-      cmd = "berks install --debug --berksfile %s" % [
-        Shellwords::escape(berksfile)
+      knife_args = if knife
+        '--config %s' % Shellwords::escape(berkshelf_config knife)
+      end
+
+      cmd = "berks install --debug --berksfile %s %s" % [
+        Shellwords::escape(berksfile), knife_args
       ]
       begin
         $stdout.puts "berks_install: %s" % cmd
