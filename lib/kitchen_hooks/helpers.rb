@@ -184,7 +184,7 @@ module KitchenHooks
         '--config %s' % Shellwords::escape(berkshelf_config knife)
       end
 
-      cmd = "berks install --debug --berksfile %s %s" % [
+      cmd = 'bundle exec berks install --debug --berksfile %s %s' % [
         Shellwords::escape(berksfile), knife_args
       ]
       begin
@@ -209,7 +209,7 @@ module KitchenHooks
       ]
       config_path = berkshelf_config(knife)
 
-      cmd = "berks upload --debug --berksfile %s --config %s" % [
+      cmd = 'bundle exec berks upload --debug --berksfile %s --config %s' % [
         Shellwords::escape(berksfile), Shellwords::escape(config_path)
       ]
 
@@ -255,7 +255,7 @@ module KitchenHooks
 
 
     def self.with_each_knife_do command, knives
-      with_each_knife "knife #{command} --config %{knife}", knives
+      with_each_knife "bundle exec knife #{command} --config %{knife}", knives
     end
 
     def self.with_each_knife command, knives
