@@ -119,7 +119,11 @@ module KitchenHooks
 
         Dir.chdir clone do
           $stdout.puts 'Uploading cookbook'
-          with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+          begin
+            outs = with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+          rescue
+            raise 'Knife exited unsuccessfully. Perhaps the cookbook is frozen'
+          end
 
           $stdout.puts 'Uploading bundled roles, environments, and data bags'
           kitchen_upload knives
@@ -135,19 +139,31 @@ module KitchenHooks
     def self.kitchen_upload knives
       if Dir.exist? 'data_bags'
         $stdout.puts 'Uploading data_bags'
-        with_each_knife_do 'upload data_bags --chef-repo-path .', knives
+        begin
+          with_each_knife_do 'upload data_bags --chef-repo-path .', knives
+        rescue
+          raise 'Could not upload data bags'
+        end
       end
 
       if Dir.exist? 'roles'
         $stdout.puts 'Uploading roles'
-        with_each_knife_do 'upload roles --chef-repo-path .', knives
+        begin
+          with_each_knife_do 'upload roles --chef-repo-path .', knives
+        rescue
+          raise 'Could not upload roles'
+        end
       end
 
       if Dir.exist? 'environments'
         $stdout.puts 'Uploading environments'
         Dir['environments/*'].peach do |e|
           knives.peach do |k|
-            upload_environment e, k
+            begin
+              upload_environment e, k
+            rescue
+              raise 'Could not upload environments'
+            end
           end
         end
       end
@@ -262,8 +278,9 @@ module KitchenHooks
       knives.pmap do |k|
         cmd = command % { knife: Shellwords::escape(k) }
         $stdout.puts 'with_each_knife: %s' % cmd
-        system cmd
-        # No error handling here; do that on "berks upload"
+        out = system cmd
+        raise out unless $?.exitstatus.zero?
+        out
       end
     end
 

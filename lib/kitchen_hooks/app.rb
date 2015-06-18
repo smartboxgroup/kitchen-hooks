@@ -166,15 +166,10 @@ module KitchenHooks
 
 
     def self.process_sync
-      cached_nodes = db['meta_cached_nodes']
-      cached_nodes ||= {}
-      sync_servers = SyncServers.new knives, cached_nodes
-      db.lock do
-        db.set! 'meta_cached_nodes', sync_servers.cached_nodes
-      end
+      db!
+      sync_servers = SyncServers.new knives
       sync = sync_servers.status
       puts 'Sync completed'
-      db!
       sync_tag = sync[:num_failures].zero? ? 'synced' : 'unsynced'
       mark sync, sync_tag
       db!

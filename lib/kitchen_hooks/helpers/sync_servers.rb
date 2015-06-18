@@ -110,19 +110,22 @@ private
       successes << n.name
     end
 
-    deleted = [] # Don't delete node objects
-
+    # Don't delete node objects, but do remove them from the cache
     deleted.each do |n|
-      puts 'Deleting node "%s"' % n
-      ridleys.peach(4) do |ridley|
-        begin
-          ridley.node.delete n
-          @cached_nodes.delete n
-        rescue \
-          puts('WARNING: Could not delete node "%s"' % n)
-        end
-      end
+      @cached_nodes.delete n.name
     end
+    deleted = []
+    # deleted.each do |n|
+    #   puts 'Deleting node "%s"' % n
+    #   ridleys.peach(4) do |ridley|
+    #     begin
+    #       ridley.node.delete n
+    #       @cached_nodes.delete n
+    #     rescue \
+    #       puts('WARNING: Could not delete node "%s"' % n)
+    #     end
+    #   end
+    # end
 
     return {
       deleted: deleted,
