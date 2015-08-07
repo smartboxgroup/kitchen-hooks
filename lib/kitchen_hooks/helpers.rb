@@ -8,7 +8,6 @@ require 'git'
 require 'ridley'
 require 'berkshelf'
 require 'sinatra/base'
-require 'pmap'
 
 require_relative 'helpers/sync_servers'
 
@@ -64,7 +63,7 @@ module KitchenHooks
           $stdout.puts 'Applying constraints'
           constraints = lockfile_constraints 'Berksfile.lock'
           environment = tag_name event
-          knives.peach do |k|
+          knives.each do |k|
             apply_constraints constraints, environment, k
             verify_constraints constraints, environment, k
           end
@@ -111,7 +110,7 @@ module KitchenHooks
         if File.exist? berksfile
           $stdout.puts 'Uploading dependencies'
           berks_install berksfile
-          knives.peach do |knife|
+          knives.each do |knife|
             berks_upload berksfile, knife
           end
         end
@@ -158,8 +157,8 @@ module KitchenHooks
 
       if Dir.exist? 'environments'
         $stdout.puts 'Uploading environments'
-        Dir['environments/*'].peach do |e|
-          knives.peach do |k|
+        Dir['environments/*'].each do |e|
+          knives.each do |k|
             begin
               upload_environment e, k
             rescue
@@ -276,7 +275,7 @@ module KitchenHooks
     end
 
     def self.with_each_knife command, knives
-      knives.pmap do |k|
+      knives.map do |k|
         cmd = "#{command} 2>&1" % { knife: Shellwords::escape(k) }
         $stdout.puts 'with_each_knife: %s' % cmd
         out = system cmd
