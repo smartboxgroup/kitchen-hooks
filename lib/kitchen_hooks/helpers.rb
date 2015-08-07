@@ -118,10 +118,10 @@ module KitchenHooks
         Dir.chdir clone do
           $stdout.puts 'Uploading cookbook'
           begin
-            outs = with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
-          rescue
-            unless outs =~ /is frozen/ # Ignore frozen cookbooks already uploaded
-              raise 'Knife exited unsuccessfully. Check out the Kitchen Hooks logs.'
+            with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+          rescue => e
+            unless e.to_s =~ /frozen/i # Ignore frozen cookbooks already uploaded
+              raise "Knife exited unsuccessfully: #{e}"
             end
           end
 
@@ -205,8 +205,8 @@ module KitchenHooks
       ]
       begin
         $stdout.puts "berks_install: %s" % cmd
-        system cmd
-        raise unless $?.exitstatus.zero?
+        out = `#{cmd}`
+        raise out unless $?.exitstatus.zero?
       rescue
         raise 'Could not perform berks_install with config %s' % [
           berksfile.inspect
@@ -231,8 +231,8 @@ module KitchenHooks
 
       begin
         $stdout.puts "berks_upload: %s" % cmd
-        system cmd
-        raise unless $?.exitstatus.zero?
+        out = `#{cmd}`
+        raise out unless $?.exitstatus.zero?
       rescue
         raise 'Could not perform berks_upload with config %s, knife %s' % [
           berksfile.inspect, knife.inspect
@@ -278,7 +278,7 @@ module KitchenHooks
       knives.map do |k|
         cmd = "#{command} 2>&1" % { knife: Shellwords::escape(k) }
         $stdout.puts 'with_each_knife: %s' % cmd
-        out = system cmd
+        out = `#{cmd}`
         raise out unless $?.exitstatus.zero?
         out
       end
