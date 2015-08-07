@@ -201,7 +201,7 @@ module KitchenHooks
         '--config %s' % Shellwords::escape(berkshelf_config knife)
       end
 
-      cmd = 'berks install --debug --berksfile %s %s' % [
+      cmd = 'berks install --debug --berksfile %s %s 2>&1' % [
         Shellwords::escape(berksfile), knife_args
       ]
       begin
@@ -226,7 +226,7 @@ module KitchenHooks
       ]
       config_path = berkshelf_config(knife)
 
-      cmd = 'berks upload --debug --berksfile %s --config %s' % [
+      cmd = 'berks upload --debug --berksfile %s --config %s 2>&1' % [
         Shellwords::escape(berksfile), Shellwords::escape(config_path)
       ]
 
@@ -277,7 +277,7 @@ module KitchenHooks
 
     def self.with_each_knife command, knives
       knives.pmap do |k|
-        cmd = command % { knife: Shellwords::escape(k) }
+        cmd = "#{command} 2>&1" % { knife: Shellwords::escape(k) }
         $stdout.puts 'with_each_knife: %s' % cmd
         out = system cmd
         raise out unless $?.exitstatus.zero?
