@@ -114,15 +114,14 @@ private
     deleted.each do |n|
       @cached_nodes.delete n.name
     end
-    deleted = []
     # deleted.each do |n|
-    #   puts 'Deleting node "%s"' % n
+    #   puts 'Deleting node "%s"' % n.name
     #   ridleys.peach(4) do |ridley|
     #     begin
-    #       ridley.node.delete n
-    #       @cached_nodes.delete n
+    #       ridley.node.delete n.name
+    #       @cached_nodes.delete n.name
     #     rescue \
-    #       puts('WARNING: Could not delete node "%s"' % n)
+    #       puts('WARNING: Could not delete node "%s"' % n.name)
     #     end
     #   end
     # end

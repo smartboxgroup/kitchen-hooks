@@ -106,8 +106,7 @@ module KitchenHooks
           raise 'Tagged version does not match cookbook version'
         end
 
-        berksfile = File::join clone, 'Berksfile'
-        # berksfile_lock = "#{berksfile}.lock"
+        berksfile = File.join clone, 'Berksfile'
 
         if File.exist? berksfile
           $stdout.puts 'Uploading dependencies'
@@ -200,7 +199,7 @@ module KitchenHooks
         '--config %s' % Shellwords::escape(berkshelf_config knife)
       end
 
-      cmd = 'bundle exec berks install --debug --berksfile %s %s' % [
+      cmd = 'berks install --debug --berksfile %s %s' % [
         Shellwords::escape(berksfile), knife_args
       ]
       begin
@@ -225,7 +224,7 @@ module KitchenHooks
       ]
       config_path = berkshelf_config(knife)
 
-      cmd = 'bundle exec berks upload --debug --berksfile %s --config %s' % [
+      cmd = 'berks upload --debug --berksfile %s --config %s' % [
         Shellwords::escape(berksfile), Shellwords::escape(config_path)
       ]
 
@@ -271,7 +270,7 @@ module KitchenHooks
 
 
     def self.with_each_knife_do command, knives
-      with_each_knife "bundle exec knife #{command} --config %{knife}", knives
+      with_each_knife "knife #{command} --config %{knife}", knives
     end
 
     def self.with_each_knife command, knives

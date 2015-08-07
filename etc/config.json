@@ -1,5 +1,5 @@
 {
-  "sync_interval": 60,
+  "sync_interval": null,
   "hipchat": null,
   "knives": {
     "dc1": "~/.chef/dc1.rb",

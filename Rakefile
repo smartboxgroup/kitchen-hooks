@@ -35,12 +35,3 @@ Gem::Tasks::Sign::Checksum.new sha2: true
 # "rake version"
 require 'rake/version_task'
 Rake::VersionTask.new
-
-
-# "rake fpm"
-desc 'Convert latest .gem to .deb with FPM'
-task fpm: :build do
-  latest_gem = Dir['pkg/*.gem'].pop
-  system "fpm -s gem -t deb #{Shellwords::escape latest_gem}"
-  system 'mv *.deb pkg'
-end
