@@ -121,7 +121,9 @@ module KitchenHooks
           begin
             outs = with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
           rescue
-            raise 'Knife exited unsuccessfully. Perhaps the cookbook is frozen'
+            unless outs =~ /is frozen/ # Ignore frozen cookbooks already uploaded
+              raise 'Knife exited unsuccessfully. Check out the Kitchen Hooks logs.'
+            end
           end
 
           $stdout.puts 'Uploading bundled roles, environments, and data bags'
