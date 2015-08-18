@@ -125,8 +125,10 @@ module KitchenHooks
             end
           end
 
-          $stdout.puts 'Uploading bundled roles, environments, and data bags'
-          kitchen_upload knives
+          if commit_to_realm? event
+            $stdout.puts 'Uploading bundled roles, environments, and data bags'
+            kitchen_upload knives
+          end
         end
       end
 
@@ -491,6 +493,11 @@ module KitchenHooks
     end
 
 
+    def self.commit_to_realm? event
+      repo_name(event) =~ /^realm_/
+    end
+
+
     def self.tagged_commit_to_cookbook? event
       cookbook_repo?(event) &&
       event['ref'] =~ %r{/tags/} &&
@@ -500,7 +507,7 @@ module KitchenHooks
 
     def self.tagged_commit_to_realm? event
       tagged_commit_to_cookbook?(event) &&
-      repo_name(event) =~ /^realm_/
+      commit_to_realm?(event)
     end
   end
 end
