@@ -6,9 +6,9 @@
   "user_name": "Sean Clemmer",
   "repository": {
     "name": "app_graphite",
-    "url": "git@git.bluejeansnet.com:chef/app_graphite.git",
+    "url": "git@git.bjn.io:chef/app_graphite.git",
     "description": "",
-    "homepage": "http://git.bluejeansnet.com/chef/app_graphite"
+    "homepage": "http://git.bjn.io/chef/app_graphite"
   },
   "commits": [
 

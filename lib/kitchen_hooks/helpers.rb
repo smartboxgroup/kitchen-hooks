@@ -2,8 +2,10 @@ require 'securerandom'
 require 'shellwords'
 require 'fileutils'
 require 'tempfile'
+require 'tmpdir'
 require 'json'
 
+require 'pmap'
 require 'git'
 require 'ridley'
 require 'berkshelf'
@@ -63,7 +65,7 @@ module KitchenHooks
           $stdout.puts 'Applying constraints'
           constraints = lockfile_constraints 'Berksfile.lock'
           environment = tag_name event
-          knives.each do |k|
+          knives.peach do |k|
             apply_constraints constraints, environment, k
             verify_constraints constraints, environment, k
           end
@@ -110,8 +112,15 @@ module KitchenHooks
         if File.exist? berksfile
           $stdout.puts 'Uploading dependencies'
           berks_install berksfile
-          knives.each do |knife|
-            berks_upload berksfile, knife
+
+          knives.map do |knife|
+            tmp_root = Dir.mktmpdir
+            tmp_path = File.join tmp_root, File.basename(knife, '.rb')
+            FileUtils.copy_entry clone, tmp_path
+            [ knife, tmp_path ]
+          end.peach do |(knife, tmp_path)|
+            tmp_berksfile = File.join tmp_path, 'Berksfile'
+            berks_upload tmp_berksfile, knife
           end
         end
 
@@ -159,13 +168,14 @@ module KitchenHooks
 
       if Dir.exist? 'environments'
         $stdout.puts 'Uploading environments'
-        Dir['environments/*'].each do |e|
-          knives.each do |k|
-            begin
-              upload_environment e, k
-            rescue
-              raise 'Could not upload environments'
+        knives.peach do |k|
+          begin
+            Dir['environments/*'].each do |e|
+              upload_environment e, k # Can't use the default logic, as we
+                                      # maintain our own pins
             end
+          rescue
+            raise 'Could not upload environments'
           end
         end
       end
@@ -277,7 +287,7 @@ module KitchenHooks
     end
 
     def self.with_each_knife command, knives
-      knives.map do |k|
+      knives.pmap do |k|
         cmd = "#{command} 2>&1" % { knife: Shellwords::escape(k) }
         $stdout.puts 'with_each_knife: %s' % cmd
         out = `#{cmd}`

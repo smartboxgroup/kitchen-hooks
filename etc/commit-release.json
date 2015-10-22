@@ -1,21 +1,21 @@
 {
-  "before": "46cb7ed07e5683d6418d4c47ba5d9389cc2d9b19",
-  "after": "a2d9936039782e7e089651f5dced113d00d84d9c",
-  "ref": "refs/tags/v0.2.12",
+  "before": "f9f511eb4e2175d67bc1c02d8b66cb7b1d4c72eb",
+  "after": "b5947da6ab47cc2227406fcd383b146d97a7355e",
+  "ref": "refs/tags/v1.20.18",
   "user_id": 645,
   "user_name": "Sean Clemmer",
   "repository": {
-    "name": "app_cassandra_dse",
-    "url": "git@git.bluejeansnet.com:chef/app_cassandra_dse.git",
+    "name": "realm_logger",
+    "url": "git@git.bjn.io:chef/realm_logger.git",
     "description": "",
-    "homepage": "http://git.bluejeansnet.com/chef/app_cassandra_dse"
+    "homepage": "http://git.bjn.io/chef/realm_logger"
   },
   "commits": [
     {
-      "id": "a2d9936039782e7e089651f5dced113d00d84d9c",
+      "id": "b5947da6ab47cc2227406fcd383b146d97a7355e",
       "message": "XYZ",
       "timestamp": "2014-11-25T18:30:57-08:00",
-      "url": "http://git.bluejeansnet.com/chef/app_cassandra_dse/commit/a2d9936039782e7e089651f5dced113d00d84d9c",
+      "url": "http://git.bjn.io/chef/realm_logger/commit/b5947da6ab47cc2227406fcd383b146d97a7355e",
       "author": {
         "name": "Sean Clemmer",
         "email": "sclemmer@bluejeans.com"

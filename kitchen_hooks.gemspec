@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'hipchat', '~> 1.4.0'
   s.add_runtime_dependency 'daybreak', '~> 0.3'
   s.add_runtime_dependency 'retryable', '~> 2'
-  s.add_runtime_dependency 'berkshelf', '~> 3'
+  s.add_runtime_dependency 'berkshelf', '~> 4'
   s.add_runtime_dependency 'thor', '~> 0'
   s.add_runtime_dependency 'git', '~> 1.2'
   s.add_runtime_dependency 'sinatra', '~> 1.4'
@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'chef', '< 12.0.0'
   s.add_runtime_dependency 'eventmachine', '= 1.0.4'
   s.add_runtime_dependency 'thin', '= 1.6.3'
+  s.add_runtime_dependency 'pmap', '~> 1'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- test/*`.split("\n")

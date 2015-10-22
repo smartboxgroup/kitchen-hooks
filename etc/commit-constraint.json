@@ -6,16 +6,16 @@
   "user_name": "Sean Clemmer",
   "repository": {
     "name": "realm_catalyst",
-    "url": "git@git.bluejeansnet.com:chef/realm_catalyst.git",
+    "url": "git@git.bjn.io:chef/realm_catalyst.git",
     "description": "",
-    "homepage": "http://git.bluejeansnet.com/chef/realm_catalyst"
+    "homepage": "http://git.bjn.io/chef/realm_catalyst"
   },
   "commits": [
     {
       "id": "0835e7c74314cfe2aa9f98fe47338031b637ef95",
       "message": "XYZ",
       "timestamp": "2014-11-25T18:30:57-08:00",
-      "url": "http://git.bluejeansnet.com/chef/realm_catalyst/commit/7b238ce9c6cff250db5a0b727b9661b618b82e1d",
+      "url": "http://git.bjn.io/chef/realm_catalyst/commit/7b238ce9c6cff250db5a0b727b9661b618b82e1d",
       "author": {
         "name": "Sean Clemmer",
         "email": "sclemmer@bluejeans.com"
