@@ -61,8 +61,6 @@ module KitchenHooks
       desc: 'Location of temporary directory',
       default: '/tmp'
     def server
-      Thread.abort_on_exception = true
-
       App.config! JSON::parse(File.read(options.config))
       App.backlog!
       App.db! options.database
