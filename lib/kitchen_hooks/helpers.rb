@@ -70,6 +70,9 @@ module KitchenHooks
             verify_constraints constraints, environment, k
           end
 
+          head_tags = `git tag --points-at HEAD`.lines.map(&:strip)
+          version_tag = head_tags.select { |t| t =~ /^v\d+/ }.shift
+          event['version'] = version_tag
         end
       end
 
@@ -403,9 +406,11 @@ module KitchenHooks
       when 'cookbook upload'
         %Q| <i>#{author(event)}</i> released <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> of <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> |
       when 'constraint application'
-        %Q| <i>#{author(event)}</i> constrained <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> with <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> |
+        %Q| <i>#{author(event)}</i> constrained <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> with <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> #{version_link event} |
       when 'release'
         %Q| Kitchen Hooks <b>v#{event}</b> released! |
+      else
+        raise entry.inspect
       end.strip
     end
 
@@ -518,6 +523,18 @@ module KitchenHooks
     def self.tagged_commit_to_realm? event
       tagged_commit_to_cookbook?(event) &&
       commit_to_realm?(event)
+    end
+
+    def self.version_url event
+      return unless v = event['version']
+      url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
+      "#{url}/commits/#{v}"
+    end
+
+    def self.version_link event
+      return unless v = event['version']
+      url = version_url(event)
+      'at <a href="%s">%s</a>' % [ url, v ]
     end
   end
 end

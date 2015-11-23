@@ -2,7 +2,6 @@
   "sync_interval": null,
   "hipchat": null,
   "knives": {
-    "dc1": "~/.chef/dc1.rb",
     "bng11": "~/.chef/bng11.rb"
   }
 }
