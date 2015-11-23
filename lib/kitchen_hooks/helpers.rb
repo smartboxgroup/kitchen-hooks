@@ -70,8 +70,13 @@ module KitchenHooks
             verify_constraints constraints, environment, k
           end
 
-          head_tags = `git tag --points-at HEAD`.lines.map(&:strip)
-          version_tag = head_tags.select { |t| t =~ /^v\d+/ }.shift
+          rev  = `git rev-list -1 #{environment}`.strip
+          refs = `git show-ref --tags -d | grep '^#{rev}'`.lines.map(&:strip)
+          tags = refs.map do |r|
+            $1 if r =~ %r|refs/tags/(?<tag>.*?)\^|s
+          end
+
+          version_tag = tags.select { |t| t =~ /^v\d+/ }.shift
           event['version'] = version_tag
         end
       end
