@@ -1,10 +1,9 @@
-FROM ruby:2.2
+FROM sczizzo/trusty-tool
 MAINTAINER Sean Clemmer <sczizzo@gmail.com>
-ENV DEBIAN_FRONTEND=noninteractive
 
-COPY . /franz
+COPY . /build
 
-RUN cd /franz \
+RUN cd /build \
  && touch .docker \
  && bundle \
  && bundle exec rake test

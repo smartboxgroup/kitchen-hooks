@@ -10,6 +10,7 @@ Vagrant.configure('2') do |config|
   config.vm.define 'precise-test' do |node|
     node.vm.box = 'bento/ubuntu-12.04'
     node.vm.hostname = 'test'
+    node.vm.network :private_network, ip: '10.10.10.10'
     node.vm.provision :shell, inline: <<-END
       set -x
       set -e
@@ -36,6 +37,7 @@ Vagrant.configure('2') do |config|
   config.vm.define 'trusty-test' do |node|
     node.vm.box = 'bento/ubuntu-14.04'
     node.vm.hostname = 'test'
+    node.vm.network :private_network, ip: '10.10.10.11'
     node.vm.provision :shell, inline: <<-END
       set -x
       set -e

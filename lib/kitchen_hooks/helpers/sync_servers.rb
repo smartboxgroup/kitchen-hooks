@@ -45,8 +45,8 @@ private
       end
 
       nodes.map do |n|
-        c = clients.select { |c| c.name == n.name }.shift
-        @clients[n.name] = c unless c.nil?
+        client = clients.select { |c| c.name == n.name }.shift
+        @clients[n.name] = client unless client.nil?
         n
       end
     end.flatten

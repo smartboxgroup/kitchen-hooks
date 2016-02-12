@@ -1,11 +1,10 @@
-FROM sczizzo/trusty-tool:latest
+FROM sczizzo/trusty-tool
 MAINTAINER Sean Clemmer <sczizzo@gmail.com>
-ENV DEBIAN_FRONTEND=noninteractive
 
-COPY . /hooks
+COPY . /build
 
-RUN cd /hooks \
- && /hooks/tasks/package/_package.sh \
- && rm -rf /hooks /tmp/* /var/lib/apt/lists/*
+RUN cd /build \
+ && /build/tasks/package/_package.sh \
+ && rm -rf /build /tmp/* /var/lib/apt/lists/*
 
-VOLUME /package
+VOLUME /artifacts

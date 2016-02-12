@@ -2,7 +2,8 @@
 set -x
 set -e
 
+project=$(basename `pwd`)
 dockerfile="${1:-tasks/test/Dockerfile}"
-task_name="${2:-franz-test-$(date +%s)}"
+task_name="${2:-$project-test-$(date +%s)}"
 
 docker build -t "$task_name" -f "$dockerfile" .

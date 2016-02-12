@@ -7,8 +7,10 @@ version=$(cat VERSION)
 
 rm -rf etc
 rm -rf tmp
+rm -rf doc
 rm -rf .bundle
 rm -rf .vagrant
+rm -rf vendor
 
 bundle update
 bundle package --all
@@ -21,9 +23,10 @@ bundle exec fpm -n kitchen_hooks \
   tasks/package/kitchen_hooks.sh=/usr/local/bin/kitchen_hooks \
   ./=/opt/kitchen_hooks
 
-dpkg -i *.deb
-ls -la /opt/kitchen_hooks
-kitchen_hooks art
+# gem uninstall -aIx
+# dpkg -i *.deb
+# ls -la /opt/kitchen_hooks
+# kitchen_hooks art
 
-mkdir -p /package
-mv *.deb /package
+mkdir -p /artifacts
+mv *.deb /artifacts
