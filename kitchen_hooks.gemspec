@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path(File.join('..', 'lib'), __FILE__)
 require 'kitchen_hooks/metadata'
+require 'find'
 
 Gem::Specification.new do |s|
   s.name        = 'kitchen_hooks'

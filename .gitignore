@@ -15,3 +15,4 @@ doc
 pkg
 tmp
 Gemfile.lock
+.vagrant
