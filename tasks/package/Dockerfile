@@ -1,4 +1,4 @@
-FROM sczizzo/trusty-tool
+FROM sczizzo/trusty-tool:latest
 MAINTAINER Sean Clemmer <sczizzo@gmail.com>
 
 COPY . /build
