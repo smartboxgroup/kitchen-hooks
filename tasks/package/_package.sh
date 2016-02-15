@@ -2,15 +2,19 @@
 set -x
 set -e
 
+ARTIFACTS="${1:-artifacts}"
+
 ruby=ruby2.2
 version=$(cat VERSION)
 
+rm -rf doc
 rm -rf etc
 rm -rf tmp
-rm -rf doc
 rm -rf .bundle
 rm -rf .vagrant
 rm -rf vendor
+rm -rf pkg
+mkdir -p pkg
 
 bundle update
 bundle package --all
@@ -28,5 +32,5 @@ bundle exec fpm -n kitchen_hooks \
 # ls -la /opt/kitchen_hooks
 # kitchen_hooks art
 
-mkdir -p /artifacts
-mv *.deb /artifacts
+mkdir -p $ARTIFACTS
+mv *.deb $ARTIFACTS
