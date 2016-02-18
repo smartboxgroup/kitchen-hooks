@@ -1,5 +1,5 @@
+require 'ci/reporter/rake/minitest'
 require 'shellwords'
-require 'rubygems'
 require 'bundler'
 require 'rake'
 
@@ -13,6 +13,16 @@ Rake::TestTask.new(:test) do |test|
 end
 
 task default: :test
+
+task minitest: %w[ ci:setup:minitest test ]
+
+task :report do
+  %W[ minitest yard ].each do |task_name|
+    sh "bundle exec rake #{task_name}" do
+      # Ignore errors
+    end
+  end
+end
 
 
 # "rake yard"

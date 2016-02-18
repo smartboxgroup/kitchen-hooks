@@ -7,4 +7,10 @@ COPY . /build
 RUN cd /build \
  && touch .docker \
  && bundle update \
- && bundle exec rake test
+ && bundle exec rake report \
+ && mkdir -p /reports/test \
+ && mv doc /reports \
+ && mv coverage /reports \
+ && mv test/reports/* /reports/test
+
+VOLUME /reports

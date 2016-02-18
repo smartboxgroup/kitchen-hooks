@@ -18,3 +18,5 @@ Gemfile.lock
 .vagrant
 vendor
 artifacts
+reports
+coverage
