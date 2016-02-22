@@ -65,6 +65,13 @@ module KitchenHooks
           $stdout.puts 'Applying constraints'
           constraints = lockfile_constraints 'Berksfile.lock'
           environment = tag_name event
+
+          environments = Dir['environments/*.json'].map { |f| File.basename f, '.json' }
+          unless environments.include?(environment)
+            $stderr.puts 'WARNING: No local environment: %s' % environment
+            next
+          end
+
           knives.peach do |k|
             apply_constraints constraints, environment, k
             verify_constraints constraints, environment, k
@@ -83,6 +90,10 @@ module KitchenHooks
 
       $stdout.puts "finished perform_constraint_application: #{event['after']}"
       return # no error
+
+    rescue Git::GitExecuteError
+      $stderr.puts 'WARNING: Could not check out tagged commit'
+      return false
     end
 
 
@@ -451,7 +462,7 @@ module KitchenHooks
 
 
     def self.cookbook_name event
-      repo_name(event).sub /^(app|base|realm|fork)_/, 'bjn_'
+      repo_name(event).sub(/^(app|base|realm|fork)_/, 'bjn_')
     end
 
 
