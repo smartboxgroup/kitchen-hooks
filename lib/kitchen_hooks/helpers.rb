@@ -136,10 +136,11 @@ module KitchenHooks
             tmp_root = Dir.mktmpdir
             tmp_path = File.join tmp_root, File.basename(knife, '.rb')
             FileUtils.copy_entry clone, tmp_path
-            [ knife, tmp_path ]
-          end.peach do |(knife, tmp_path)|
+            [ knife, tmp_path, tmp_root ]
+          end.peach do |(knife, tmp_path, tmp_root)|
             tmp_berksfile = File.join tmp_path, 'Berksfile'
             berks_upload tmp_berksfile, knife
+            FileUtils.rm_rf tmp_root
           end
         end
 
@@ -297,6 +298,7 @@ module KitchenHooks
       yield dir
 
       FileUtils.rm_rf root
+      FileUtils.rm_rf dir
       $stdout.puts 'finished tmp_clone'
     end
 
