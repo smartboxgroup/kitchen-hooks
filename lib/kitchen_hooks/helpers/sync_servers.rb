@@ -24,7 +24,7 @@ private
 
   def ridleys
     @ridleys ||= @knives.map do |knife|
-      Ridley.from_chef_config(knife)
+      Ridley.from_chef_config(knife, ssl: { verify: false })
     end
   end
 

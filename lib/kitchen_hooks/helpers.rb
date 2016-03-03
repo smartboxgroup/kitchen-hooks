@@ -203,7 +203,7 @@ module KitchenHooks
 
 
     def self.berkshelf_config knife
-      ridley = Ridley::from_chef_config knife
+      ridley = Ridley::from_chef_config knife, ssl: { verify: false }
       config = {
         chef: {
           node_name: ridley.client_name,
@@ -319,7 +319,7 @@ module KitchenHooks
 
 
     def self.get_environment environment, knife
-      ridley = Ridley::from_chef_config knife
+      ridley = Ridley::from_chef_config knife, ssl: { verify: false }
       ridley.environment.find environment
     end
 
@@ -377,7 +377,7 @@ module KitchenHooks
 
       # Load existing environment object on Chef server
       Celluloid.logger = nil
-      ridley = Ridley::from_chef_config knife
+      ridley = Ridley::from_chef_config knife, ssl: { verify: false }
       chef_environment = ridley.environment.find(local_environment['name'])
 
       # Create environment object if it doesn't exist
