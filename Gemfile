@@ -17,5 +17,5 @@ group :test do
   gem 'ci_reporter'
   gem 'ci_reporter_minitest'
   gem 'simplecov', require: false
-  gem 'simplecov-cobertura', github: 'sczizzo/simplecov-cobertura'
+  gem 'simplecov-cobertura'
 end

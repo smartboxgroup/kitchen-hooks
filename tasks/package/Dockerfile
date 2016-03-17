@@ -1,6 +1,7 @@
 FROM sczizzo/trusty-tool:latest
 MAINTAINER Sean Clemmer <sczizzo@gmail.com>
 ENV DEBIAN_FRONTEND=noninteractive
+ARG BUILD_NUMBER=1
 
 COPY . /build
 

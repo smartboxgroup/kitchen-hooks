@@ -5,7 +5,7 @@ set -e
 ARTIFACTS="${1:-artifacts}"
 
 ruby=ruby2.2
-version=$(cat VERSION)
+version="$(cat VERSION)-${BUILD_NUMBER:-1}+$(git rev-parse --short HEAD)"
 
 rm -rf doc
 rm -rf etc

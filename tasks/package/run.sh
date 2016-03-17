@@ -18,6 +18,6 @@ trap cleanup EXIT
 
 rm -rf "$artifacts"
 docker pull "$base_image"
-docker build -t "$task_name" -f "$dockerfile" .
+docker build --build-arg BUILD_NUMBER="$BUILD_NUMBER" -t "$task_name" -f "$dockerfile" .
 docker run --name "$task_name" -dt "$task_name"
 docker cp "$task_name":/artifacts "$artifacts"
