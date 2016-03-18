@@ -139,6 +139,7 @@ module KitchenHooks
             [ knife, tmp_path, tmp_root ]
           end.peach do |(knife, tmp_path, tmp_root)|
             tmp_berksfile = File.join tmp_path, 'Berksfile'
+            berks_install tmp_berksfile
             berks_upload tmp_berksfile, knife
             FileUtils.rm_rf tmp_root
           end
@@ -257,7 +258,7 @@ module KitchenHooks
       ]
       config_path = berkshelf_config(knife)
 
-      cmd = 'berks upload --debug --berksfile %s --config %s 2>&1' % [
+      cmd = 'berks upload --no-ssl-verify --debug --berksfile %s --config %s 2>&1' % [
         Shellwords::escape(berksfile), Shellwords::escape(config_path)
       ]
 

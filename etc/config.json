@@ -2,6 +2,6 @@
   "sync_interval": null,
   "hipchat": null,
   "knives": {
-    "bng11": "~/Desktop/hooks.rb"
+    "bng11": "~/.chef/dc1.rb"
   }
 }
