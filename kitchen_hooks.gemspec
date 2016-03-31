@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'git', '~> 1.2'
   s.add_runtime_dependency 'sinatra', '~> 1.4'
   s.add_runtime_dependency 'ridley', '~> 4.1'
-  s.add_runtime_dependency 'chef', '< 12'
+  s.add_runtime_dependency 'chef', '~> 11.14'
   s.add_runtime_dependency 'faraday', '= 0.9.1'
   s.add_runtime_dependency 'eventmachine', '= 1.0.4'
   s.add_runtime_dependency 'thin', '= 1.6.3'
