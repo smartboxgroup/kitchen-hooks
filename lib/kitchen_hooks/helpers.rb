@@ -130,6 +130,7 @@ module KitchenHooks
 
         if File.exist? berksfile
           $stdout.puts 'Uploading dependencies'
+          FileUtils.rm_rf File.join(ENV['HOME'], '.berkshelf')
           berks_install berksfile
 
           knives.map do |knife|
@@ -139,7 +140,6 @@ module KitchenHooks
             [ knife, tmp_path, tmp_root ]
           end.peach do |(knife, tmp_path, tmp_root)|
             tmp_berksfile = File.join tmp_path, 'Berksfile'
-            berks_install tmp_berksfile
             berks_upload tmp_berksfile, knife
             FileUtils.rm_rf tmp_root
           end
