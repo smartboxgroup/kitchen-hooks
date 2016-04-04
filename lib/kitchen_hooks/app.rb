@@ -191,6 +191,17 @@ module KitchenHooks
         mark event, 'kitchen upload', possible_error
       end
 
+      if commit_to_data_bags?(event) ||
+         commit_to_environments?(event) ||
+         commit_to_roles?(event)
+        possible_error = begin
+          perform_upload_from_file event, knives
+        rescue Exception => e
+          report_error e, 'Could not perform upload from files: <i>%s</i>' % e.message.lines.first
+        end
+        mark event, 'upload from files', possible_error
+      end
+
       if tagged_commit_to_cookbook?(event) &&
          tag_name(event) =~ /^v\d+/ # Cookbooks tagged with a version
         possible_error = begin
