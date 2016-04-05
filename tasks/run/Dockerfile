@@ -3,7 +3,6 @@ MAINTAINER Sean Clemmer <sczizzo@gmail.com>
 ENV DEBIAN_FRONTEND=noninteractive
 
 COPY . /kitchen_hooks
-COPY ~/.chef /root/.chef
 
 RUN ln -s /kitchen_hooks/etc/config.json /etc/config.json
 RUN cd /kitchen_hooks && bundle update && bundle package --all && rake build && rake install
