@@ -17,4 +17,4 @@ trap cleanup EXIT
 
 docker pull "$base_image"
 docker build -t "$task_name" -f "$dockerfile" .
-docker run --name "$task_name" -t "$task_name"
+docker run -v ~/.chef:/root/.chef --name "$task_name" -t "$task_name"
