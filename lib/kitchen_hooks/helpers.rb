@@ -486,6 +486,8 @@ module KitchenHooks
         %Q| <i>#{author(event)}</i> constrained <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> with <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> #{version_link event} |
       when 'release'
         %Q| Kitchen Hooks <b>v#{event}</b> released! |
+      when 'upload from files'
+        %Q| <i>#{author(event)}</i> uploaded <a href="#{gitlab_url(event)}">files to chef</a> |
       else
         raise entry.inspect
       end.strip
