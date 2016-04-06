@@ -338,7 +338,14 @@ module KitchenHooks
       dir = File::join root, Time.now.to_f.to_s, cookbook_name(event)
       FileUtils.mkdir_p dir
 
-      repo = Git.clone git_daemon_style_url(event), dir, log: $stdout
+      git_protocol = event['repository']['protocol']
+      if git_protocol == 'daemon'
+        git_clone_url = git_daemon_style_url(event)
+      else
+        git_clone_url = event['repository']["git_#{git_protocol}_url"]
+      end
+
+      repo = Git.clone git_clone_url, dir, log: $stdout
 
       commit = self.send(commit_method, event)
 

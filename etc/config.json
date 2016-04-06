@@ -1,6 +1,7 @@
 {
   "sync_interval": null,
   "hipchat": null,
+  "git_protocol": "daemon",
   "knives": {
     "bng11": "~/.chef/bng11.rb"
   }
