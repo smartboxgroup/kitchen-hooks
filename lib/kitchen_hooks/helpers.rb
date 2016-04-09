@@ -109,7 +109,11 @@ module KitchenHooks
 
       tmp_clone event, :tagged_commit do |clone|
         tagged_version = tag_name(event).delete('v')
-        cookbook_version = File.read(File.join(clone, 'VERSION')).strip
+        if File.exist? File.join(clone, 'VERSION')
+          cookbook_version = File.read(File.join(clone, 'VERSION')).strip
+        else
+          cookbook_version = File.foreach(File.join(clone, 'metadata.rb')).grep(/version/)[0][/\"(.*)\"/,1]
+        end
         unless tagged_version == cookbook_version
           raise 'Tagged version does not match cookbook version'
         end
