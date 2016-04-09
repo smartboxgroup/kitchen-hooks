@@ -208,7 +208,7 @@ module KitchenHooks
       end
 
       if tagged_commit_to_cookbook?(event) &&
-         tag_name(event) =~ /^v\d+/ # Cookbooks tagged with a version
+         tag_name(event) =~ /^v?\d+/ # Cookbooks tagged with a version
         possible_error = begin
           perform_cookbook_upload event, knives
         rescue Exception => e
