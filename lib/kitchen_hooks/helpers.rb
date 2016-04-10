@@ -491,7 +491,7 @@ module KitchenHooks
       when 'release'
         %Q| Kitchen Hooks <b>v#{event}</b> released! |
       when 'upload from files'
-        %Q| <i>#{author(event)}</i> uploaded <a href="#{gitlab_url(event)}">files to chef</a> |
+        %Q| <i>#{author(event)}</i> uploaded <a href="#{gitlab_url(event)}">files</a> to chef |
       else
         raise entry.inspect
       end.strip
@@ -522,12 +522,11 @@ module KitchenHooks
     def self.files_pushed event
       files=[]
       event.fetch('commits').each do |commit|
-        files << commit.select{ |k,v| k =~ /(added|modified)/ }.map{ |k,v| v}.flatten
+        files << commit.select{ |k,v| k =~ /(added|modified)/ }.values.flatten
       end
 
       files = files.flatten.uniq
     end
-
 
 
     def self.author event
