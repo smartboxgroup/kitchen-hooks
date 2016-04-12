@@ -534,12 +534,11 @@ module KitchenHooks
 
 
     def self.files_pushed event
-      files=[]
+      files = []
       event.fetch('commits').each do |commit|
-        files << commit.select{ |k,v| k =~ /(added|modified)/ }.values.flatten
+        files << commit.select { |k,v| k =~ /(added|modified)/ }.values.flatten
       end
-
-      files = files.flatten.uniq
+      files.flatten.uniq
     end
 
 

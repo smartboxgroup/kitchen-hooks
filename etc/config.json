@@ -1,8 +1,7 @@
 {
   "sync_interval": null,
   "hipchat": null,
-  "git_protocol": "daemon",
   "knives": {
-    "bng11": "~/.chef/dc1.rb"
+    "chef-z": "~/.chef/chef-z.rb"
   }
 }

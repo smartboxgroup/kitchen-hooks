@@ -64,11 +64,7 @@ module KitchenHooks
         @@hipchat_nick = config['hipchat']['nick'] || raise('No HipChat "nick" provided')
         @@hipchat_room = config['hipchat']['room'] || raise('No HipChat "room" provided')
       end
-      if config['git_protocol']
-        @@git_protocol = config['git_protocol']
-      else
-        @@git_protocol = 'daemon'
-      end
+      @@git_protocol = config.fetch('git_protocol', 'daemon')
       @@knives = config['knives'].map do |_, knife|
         Pathname.new(knife).expand_path.realpath.to_s
       end
