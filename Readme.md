@@ -99,6 +99,7 @@ The configuration file is just JSON. Hopefully it's obvious:
         "room": "test",
         "token": "your_v1_api_token"
       },
+      "git_protocol": "daemon",
       "knives": {
         "user": "~/.chef/knife.rb",
         "system": "/etc/chef/knife.rb",

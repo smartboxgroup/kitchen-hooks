@@ -17,7 +17,6 @@ Celluloid.logger = nil
 Berkshelf.logger = Logger.new $stdout
 
 
-
 module KitchenHooks
   class App < Sinatra::Application
 
@@ -27,6 +26,7 @@ module KitchenHooks
       return "1 #{singular}" if n == 1
       "#{n} #{plural}"
     end
+
 
     # http://stackoverflow.com/questions/4136248/how-to-generate-a-human-readable-time-range-using-ruby-on-rails
     def self.humanize_seconds secs
@@ -51,7 +51,6 @@ module KitchenHooks
       $stdout.puts e.backtrace.inspect
       msg
     end
-
 
 
     def self.perform_constraint_application event, knives
@@ -121,7 +120,11 @@ module KitchenHooks
 
       tmp_clone event, :tagged_commit do |clone|
         tagged_version = tag_name(event).delete('v')
-        cookbook_version = File.read(File.join(clone, 'VERSION')).strip
+        if File.exist? File.join(clone, 'VERSION')
+          cookbook_version = File.read(File.join(clone, 'VERSION')).strip
+        else
+          cookbook_version = File.foreach(File.join(clone, 'metadata.rb')).grep(/version/)[0][/\"(.*)\"/,1]
+        end
         unless tagged_version == cookbook_version
           raise 'Tagged version does not match cookbook version'
         end
@@ -167,6 +170,31 @@ module KitchenHooks
     end
 
 
+    def self.perform_upload_from_file event, knives
+      return false unless commit_to_master?(event)
+      $stdout.puts 'started perform_upload_from_file event=%s, knives=%s' % [
+        event['after'], knives.inspect
+      ]
+
+      tmp_clone event, :latest_commit do |clone|
+        Dir.chdir clone do
+          if commit_to_data_bags?(event)
+            data_bag_from_file repo_name(event), files_pushed(event), knives
+          end
+          if commit_to_environments?(event)
+            environment_from_file files_pushed(event), knives
+          end
+          if commit_to_roles?(event)
+            role_from_file files_pushed(event), knives
+          end
+        end
+      end
+
+      $stdout.puts "finished perform_upload_from_file: #{event['after']}"
+      return # no error
+    end
+
+
 
     def self.kitchen_upload knives
       if Dir.exist? 'data_bags'
@@ -192,13 +220,54 @@ module KitchenHooks
         knives.peach do |k|
           begin
             Dir['environments/*'].each do |e|
-              upload_environment e, k # Can't use the default logic, as we
-                                      # maintain our own pins
+              # Can't use the default logic, as we maintain our own pins
+              upload_environment e, k
             end
           rescue
             raise 'Could not upload environments'
           end
         end
+      end
+    end
+
+
+    def self.data_bag_from_file data_bag, items, knives
+      $stdout.puts 'Uploading data_bags'
+      begin
+        items.each do |item|
+          # Try to guess if there is one repo per data bag or
+          # all data bags are in the sub-folders in the same repo.
+          if item.split('/').length > 1
+            data_bag = item.split('/')[-2]
+          end
+          with_each_knife_do 'data bag from file ' + data_bag + ' ' + item, knives
+        end
+      rescue
+        raise 'Could not upload data bags'
+      end
+    end
+
+
+    def self.role_from_file roles, knives
+      $stdout.puts 'Uploading roles'
+      begin
+        roles.each do |role|
+          with_each_knife_do 'role from file ' + role, knives
+        end
+      rescue
+        raise 'Could not upload roles'
+      end
+    end
+
+
+    def self.environment_from_file environments, knives
+      $stdout.puts 'Uploading environments'
+      begin
+        environments.each do |environment|
+          with_each_knife_do 'environment from file ' + environment, knives
+        end
+      rescue
+        raise 'Could not upload environments'
       end
     end
 
@@ -230,8 +299,8 @@ module KitchenHooks
       env_git_work_tree = ENV.delete 'GIT_WORK_TREE'
 
       knife_args = if knife
-        '--config %s' % Shellwords::escape(berkshelf_config knife)
-      end
+                     '--config %s' % Shellwords::escape(berkshelf_config knife)
+                   end
 
       cmd = 'berks install --debug --berksfile %s %s 2>&1' % [
         Shellwords::escape(berksfile), knife_args
@@ -286,7 +355,14 @@ module KitchenHooks
       dir = File::join root, Time.now.to_f.to_s, cookbook_name(event)
       FileUtils.mkdir_p dir
 
-      repo = Git.clone git_daemon_style_url(event), dir, log: $stdout
+      git_protocol = event['repository']['protocol']
+      if git_protocol == 'daemon'
+        git_clone_url = git_daemon_style_url(event)
+      else
+        git_clone_url = event['repository']["git_#{git_protocol}_url"]
+      end
+
+      repo = Git.clone git_clone_url, dir, log: $stdout
 
       commit = self.send(commit_method, event)
 
@@ -428,6 +504,8 @@ module KitchenHooks
         %Q| <i>#{author(event)}</i> constrained <a href="#{gitlab_tag_url(event)}">#{tag_name(event)}</a> with <a href="#{gitlab_url(event)}">#{cookbook_name(event)}</a> #{version_link event} |
       when 'release'
         %Q| Kitchen Hooks <b>v#{event}</b> released! |
+      when 'upload from files'
+        %Q| <i>#{author(event)}</i> uploaded <a href="#{gitlab_url(event)}">files</a> to chef |
       else
         raise entry.inspect
       end.strip
@@ -440,17 +518,28 @@ module KitchenHooks
       return if event.nil?
       %Q|
         <i>#{author(event)}</i> pushed #{push_details(event)}
-      |.strip
+        |.strip
     end
 
 
     def push_details e ; App.push_details e end
 
+
     def self.push_details event
       return if event.nil?
       %Q|
         <a href="#{gitlab_url(event)}">#{event['after']}</a> to <a href="#{repo_url(event)}">#{repo_name(event)}</a>
-      |.strip
+        |.strip
+    end
+
+
+    def self.files_pushed event
+      files=[]
+      event.fetch('commits').each do |commit|
+        files << commit.select{ |k,v| k =~ /(added|modified)/ }.values.flatten
+      end
+
+      files = files.flatten.uniq
     end
 
 
@@ -464,13 +553,37 @@ module KitchenHooks
     end
 
 
+    def self.repo_namespace event
+      event['project']['path_with_namespace'].split('/')[0]
+    end
+
     def self.cookbook_name event
       repo_name(event).sub(/^(app|base|realm|fork)_/, 'bjn_')
     end
 
 
     def self.cookbook_repo? event
-      repo_name(event) =~ /^(app|base|realm|fork)_/
+      repo_name(event) =~ /^(app|base|realm|fork)_/ ||
+        repo_name(event) =~ /cookbook/ ||
+        repo_namespace(event) =~ /cookbook/
+    end
+
+
+    def self.data_bag_repo? event
+      repo_name(event) =~ /data.*bag/ ||
+        repo_namespace(event) =~ /data.*bag/
+    end
+
+
+    def self.environment_repo? event
+      repo_name(event) =~ /environment/ ||
+        repo_namespace(event) =~ /environment/
+    end
+
+
+    def self.role_repo? event
+      repo_name(event) =~ /role/ ||
+        repo_namespace(event) =~ /role/
     end
 
 
@@ -527,6 +640,21 @@ module KitchenHooks
     end
 
 
+    def self.commit_to_roles? event
+      role_repo?(event) && not_deleted?(event)
+    end
+
+
+    def self.commit_to_environments? event
+      environment_repo?(event) && not_deleted?(event)
+    end
+
+
+    def self.commit_to_data_bags? event
+      data_bag_repo?(event) && not_deleted?(event)
+    end
+
+
     def self.commit_to_realm? event
       repo_name(event) =~ /^realm_/
     end
@@ -534,21 +662,23 @@ module KitchenHooks
 
     def self.tagged_commit_to_cookbook? event
       cookbook_repo?(event) &&
-      event['ref'] =~ %r{/tags/} &&
-      not_deleted?(event)
+        event['ref'] =~ %r{/tags/} &&
+        not_deleted?(event)
     end
 
 
     def self.tagged_commit_to_realm? event
       tagged_commit_to_cookbook?(event) &&
-      commit_to_realm?(event)
+        commit_to_realm?(event)
     end
+
 
     def self.version_url event
       return unless v = event['version']
       url = git_daemon_style_url(event).sub(/^git/, 'http').sub(/\.git$/, '')
       "#{url}/commits/#{v}"
     end
+
 
     def self.version_link event
       return unless v = event['version']

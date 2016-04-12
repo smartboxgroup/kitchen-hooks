@@ -10,7 +10,6 @@ require_relative 'helpers'
 require_relative 'metadata'
 
 
-
 module KitchenHooks
   class App < Sinatra::Application
     set :root, File.join(KitchenHooks::ROOT, 'web')
@@ -65,6 +64,11 @@ module KitchenHooks
         @@hipchat_nick = config['hipchat']['nick'] || raise('No HipChat "nick" provided')
         @@hipchat_room = config['hipchat']['room'] || raise('No HipChat "room" provided')
       end
+      if config['git_protocol']
+        @@git_protocol = config['git_protocol']
+      else
+        @@git_protocol = 'daemon'
+      end
       @@knives = config['knives'].map do |_, knife|
         Pathname.new(knife).expand_path.realpath.to_s
       end
@@ -102,6 +106,7 @@ module KitchenHooks
     post '/' do
       request.body.rewind
       event = JSON::parse request.body.read rescue nil
+      event['repository']['protocol'] = @@git_protocol
       @@backlog.push event
     end
 
@@ -191,8 +196,19 @@ module KitchenHooks
         mark event, 'kitchen upload', possible_error
       end
 
+      if commit_to_data_bags?(event) ||
+         commit_to_environments?(event) ||
+         commit_to_roles?(event)
+        possible_error = begin
+          perform_upload_from_file event, knives
+        rescue Exception => e
+          report_error e, 'Could not perform upload from files: <i>%s</i>' % e.message.lines.first
+        end
+        mark event, 'upload from files', possible_error
+      end
+
       if tagged_commit_to_cookbook?(event) &&
-         tag_name(event) =~ /^v\d+/ # Cookbooks tagged with a version
+         tag_name(event) =~ /^v?\d+/ # Cookbooks tagged with a version
         possible_error = begin
           perform_cookbook_upload event, knives
         rescue Exception => e
