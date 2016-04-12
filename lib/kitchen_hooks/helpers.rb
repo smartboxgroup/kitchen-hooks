@@ -553,7 +553,7 @@ module KitchenHooks
 
 
     def self.repo_namespace event
-      event['project']['path_with_namespace'].split('/')[0]
+      event['project']['path_with_namespace'].split('/')[0] rescue nil
     end
 
     def self.cookbook_name event

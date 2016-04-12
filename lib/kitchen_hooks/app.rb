@@ -178,6 +178,8 @@ module KitchenHooks
 
 
     def self.process event
+      Thread.abort_on_exception = true
+
       if event.nil? # JSON parse failed
         mark event, 'failure', 'Could not parse WebHook payload'
         return
