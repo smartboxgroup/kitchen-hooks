@@ -120,6 +120,11 @@ The `server` command also exposes some options for Sinatra configuration. See
 
 ### Changelog
 
+### 2.0
+
+* Allows more kinds of repo layouts (@luisdavim via PR #1)
+* Upgrade to Chef 12 and Berkshelf 4
+
 ### 1.7
 
 * Sync nodes between Chef servers
