@@ -149,14 +149,15 @@ module KitchenHooks
         end
 
         Dir.chdir clone do
-          $stdout.puts 'Uploading cookbook'
-          begin
-            with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
-          rescue => e
-            unless e.to_s =~ /frozen/i # Ignore frozen cookbooks already uploaded
-              raise "Knife exited unsuccessfully: #{e}"
-            end
-          end
+          # N.B. Knife uploading the cookbook should be unnecessary thanks to Berkshelf...
+          # $stdout.puts 'Uploading cookbook'
+          # begin
+          #   with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+          # rescue => e
+          #   unless e.to_s =~ /frozen/i # Ignore frozen cookbooks already uploaded
+          #     raise "Knife exited unsuccessfully: #{e}"
+          #   end
+          # end
 
           if commit_to_realm? event
             $stdout.puts 'Uploading bundled roles, environments, and data bags'
