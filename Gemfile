@@ -7,7 +7,6 @@ group :development do
   gem 'pry'
   gem 'rake'
   gem 'yard'
-  gem 'net-telnet'
   gem 'thin'
   gem 'version'
   gem 'rubygems-tasks'
