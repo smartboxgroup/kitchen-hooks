@@ -100,7 +100,7 @@ The configuration file is just JSON. Hopefully it's obvious:
         "token": "your_v1_api_token"
       },
       "git_protocol": "daemon",
-      "cookbook_upload_method": "berkshelf"
+      "cookbook_upload_method": "berkshelf",
       "knives": {
         "user": "~/.chef/knife.rb",
         "system": "/etc/chef/knife.rb",
