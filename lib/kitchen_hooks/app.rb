@@ -212,7 +212,7 @@ module KitchenHooks
           if @@cookbook_upload_method == 'berkshelf'
             perform_cookbook_upload event, knives
           else
-            perform_kife_cookbook_upload event, knives
+            perform_knife_cookbook_upload event, knives
           end
         rescue Exception => e
           report_error e, 'Could not perform cookbook upload: <i>%s</i>' % e.message.lines.first

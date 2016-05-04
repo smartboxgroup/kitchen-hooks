@@ -113,7 +113,7 @@ module KitchenHooks
     end
 
 
-    def self.perform_kife_cookbook_upload event, knives
+    def self.perform_knife_cookbook_upload event, knives
       $stdout.puts 'started perform_cookbook_upload event=%s, knives=%s' % [
         event['after'], knives.inspect
       ]
