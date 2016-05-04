@@ -113,6 +113,39 @@ module KitchenHooks
     end
 
 
+    def self.perform_kife_cookbook_upload event, knives
+      $stdout.puts 'started perform_cookbook_upload event=%s, knives=%s' % [
+        event['after'], knives.inspect
+      ]
+
+      tmp_clone event, :tagged_commit do |clone|
+        tagged_version = tag_name(event).delete('v')
+        if File.exist? File.join(clone, 'VERSION')
+          cookbook_version = File.read(File.join(clone, 'VERSION')).strip
+        else
+          cookbook_version = File.foreach(File.join(clone, 'metadata.rb')).grep(/version/)[0][/\"(.*)\"/,1]
+        end
+        unless tagged_version == cookbook_version
+          raise 'Tagged version does not match cookbook version'
+        end
+
+        Dir.chdir clone do
+          $stdout.puts 'Uploading cookbook'
+          begin
+            with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
+          rescue => e
+            unless e.to_s =~ /frozen/i # Ignore frozen cookbooks already uploaded
+              raise "Knife exited unsuccessfully: #{e}"
+            end
+          end
+        end
+      end
+
+      $stdout.puts "finished cookbook_upload: #{event['after']}"
+      return # no error
+    end
+
+
     def self.perform_cookbook_upload event, knives
       $stdout.puts 'started perform_cookbook_upload event=%s, knives=%s' % [
         event['after'], knives.inspect
@@ -149,16 +182,6 @@ module KitchenHooks
         end
 
         Dir.chdir clone do
-          # N.B. Knife uploading the cookbook should be unnecessary thanks to Berkshelf...
-          # $stdout.puts 'Uploading cookbook'
-          # begin
-          #   with_each_knife_do "cookbook upload #{cookbook_name event} -o .. --freeze", knives
-          # rescue => e
-          #   unless e.to_s =~ /frozen/i # Ignore frozen cookbooks already uploaded
-          #     raise "Knife exited unsuccessfully: #{e}"
-          #   end
-          # end
-
           if commit_to_realm? event
             $stdout.puts 'Uploading bundled roles, environments, and data bags'
             kitchen_upload knives

@@ -65,6 +65,7 @@ module KitchenHooks
         @@hipchat_room = config['hipchat']['room'] || raise('No HipChat "room" provided')
       end
       @@git_protocol = config.fetch('git_protocol', 'daemon')
+      @@cookbook_upload_method = config.fetch('cookbook_upload_method', 'berkshelf')
       @@knives = config['knives'].map do |_, knife|
         Pathname.new(knife).expand_path.realpath.to_s
       end
@@ -208,7 +209,11 @@ module KitchenHooks
       if tagged_commit_to_cookbook?(event) &&
          tag_name(event) =~ /^v?\d+/ # Cookbooks tagged with a version
         possible_error = begin
-          perform_cookbook_upload event, knives
+          if @@cookbook_upload_method == 'berkshelf'
+            perform_cookbook_upload event, knives
+          else
+            perform_kife_cookbook_upload event, knives
+          end
         rescue Exception => e
           report_error e, 'Could not perform cookbook upload: <i>%s</i>' % e.message.lines.first
         end
