@@ -259,6 +259,7 @@ module KitchenHooks
       $stdout.puts 'Uploading data_bags'
       begin
         items.each do |item|
+          next if item.split('.').last != 'json'
           # Try to guess if there is one repo per data bag or
           # all data bags are in the sub-folders in the same repo.
           if item.split('/').length > 1
@@ -276,6 +277,7 @@ module KitchenHooks
       $stdout.puts 'Uploading roles'
       begin
         roles.each do |role|
+          next if role.split('.').last != 'json'
           with_each_knife_do 'role from file ' + role, knives
         end
       rescue
@@ -288,6 +290,7 @@ module KitchenHooks
       $stdout.puts 'Uploading environments'
       begin
         environments.each do |environment|
+          next if environment.split('.').last != 'json'
           with_each_knife_do 'environment from file ' + environment, knives
         end
       rescue
